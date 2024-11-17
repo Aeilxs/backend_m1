@@ -1,17 +1,20 @@
-import { Controller, Get } from '@nestjs/common';
-import { AppService } from './app.service';
-import { FirebaseService } from './firebase/firebase.service';
+import { Controller, Get, HttpStatus } from '@nestjs/common';
+import { ApiResponse } from '@nestjs/swagger';
+import { Public } from '@decorators';
 
 @Controller()
 export class AppController {
-    constructor(
-        private readonly appService: AppService,
-        private readonly firebaseService: FirebaseService,
-    ) {}
+    constructor() {}
 
-    @Get()
+    @ApiResponse({ status: HttpStatus.OK, description: "Check if it's working" })
+    @Get('test')
+    @Public()
     async getHello(): Promise<string> {
-        await this.firebaseService.setData('testCollection', 'testDoc', { message: 'testContent' });
-        return this.appService.getHello();
+        return "It's working !\n";
+    }
+
+    @Get('test/protected')
+    async getProtectedHello(): Promise<string> {
+        return 'Token ok !';
     }
 }
