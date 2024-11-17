@@ -10,6 +10,11 @@
         "sourceMap": true,
         "outDir": "./dist",
         "baseUrl": "./",
+        "paths": {
+            "@decorators":["src/common/decorators"],
+            "@guards":["src/common/guards"],
+            "@dtos":["src/common/dtos"],
+        },
         "incremental": true,
         "skipLibCheck": true,
         "strictNullChecks": false,

@@ -8,5 +8,6 @@ import { FirebaseService } from 'src/firebase/firebase.service';
     imports: [FirebaseModule],
     providers: [AuthService, FirebaseService],
     controllers: [AuthController],
+    exports: [AuthService],
 })
 export class AuthModule {}
