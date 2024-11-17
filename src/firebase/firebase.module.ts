@@ -5,9 +5,7 @@ import * as admin from 'firebase-admin';
 @Module({})
 export class FirebaseModule {
     static forRoot(serviceAccount: admin.ServiceAccount): DynamicModule {
-        admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount),
-        });
+        admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
 
         return {
             module: FirebaseModule,
