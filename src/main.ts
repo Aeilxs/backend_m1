@@ -1,9 +1,9 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
-import { FirebaseInterceptor } from './common/interceptors/firebase.interceptor';
+import { FirebaseInterceptor } from '@interceptors';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { FirebaseAuthGuard } from './common/guards/firebase-auth.guard';
+import { FirebaseAuthGuard } from '@guards';
 import { AuthService } from './auth/auth.service';
 
 async function bootstrap() {

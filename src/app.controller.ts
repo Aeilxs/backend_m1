@@ -13,6 +13,8 @@ export class AppController {
         return "It's working !\n";
     }
 
+    @ApiResponse({ status: HttpStatus.OK, description: "It's working" })
+    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'No token provided' })
     @Get('test/protected')
     async getProtectedHello(): Promise<string> {
         return 'Token ok !';
