@@ -9,12 +9,7 @@ import { AuthService } from './auth/auth.service';
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
     app.useGlobalInterceptors(new FirebaseInterceptor());
-    app.useGlobalPipes(
-        new ValidationPipe({
-            whitelist: true,
-            forbidNonWhitelisted: true,
-        }),
-    );
+    app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));
 
     app.useGlobalGuards(new FirebaseAuthGuard(app.get(Reflector), app.get(AuthService)));
 
