@@ -13,16 +13,16 @@ export class FileController {
     @UseInterceptors(FileInterceptor('file'))
     async uploadFile(
         @UploadedFile() file: Express.Multer.File,
-        @User() user: DecodedIdToken,
+        @User() u: DecodedIdToken,
     ): Promise<string> {
-        return this.fileService.uploadFile(file, user.uid);
+        return this.fileService.uploadFile(u.uid, file);
     }
 
-    @Get(':userId/:fileName')
+    @Get(':fileName')
     async getFileUrl(
-        @Param('userId') userId: string,
         @Param('fileName') fileName: string,
+        @User() u: DecodedIdToken,
     ): Promise<string> {
-        return this.fileService.getFileUrl(userId, fileName);
+        return this.fileService.getFileUrl(u.uid, fileName);
     }
 }
