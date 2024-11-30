@@ -7,7 +7,7 @@ import { Storage } from 'firebase-admin/lib/storage/storage';
 export class FirebaseService {
     private auth = admin.auth();
     private firestore = admin.firestore();
-    private storage = admin.storage();
+    private storage = admin.storage().bucket(process.env.FIREBASE_CONFIG_BUCKET);
 
     getAuth(): Auth {
         return this.auth;
@@ -17,7 +17,7 @@ export class FirebaseService {
         return this.firestore;
     }
 
-    getStorage(): Storage {
+    getBucket() {
         return this.storage;
     }
 }

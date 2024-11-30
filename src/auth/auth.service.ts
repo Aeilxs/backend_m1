@@ -20,6 +20,6 @@ export class AuthService {
     }
 
     async checkToken(tok: string) {
-        await this.auth.verifyIdToken(tok);
+        return await this.auth.verifyIdToken(tok);
     }
 }
