@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { FirebaseService } from 'src/firebase/firebase.service';
 import { CreateUserDto } from 'src/common/dtos';
+import { UserRecord } from 'firebase-admin/lib/auth/user-record';
 
 @Injectable()
 export class AuthService {
@@ -21,5 +22,9 @@ export class AuthService {
 
     async checkToken(tok: string) {
         return await this.auth.verifyIdToken(tok);
+    }
+
+    async getUserByUid(uid: string) {
+        return await this.auth.getUser(uid);
     }
 }
