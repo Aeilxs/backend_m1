@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { FirebaseService } from 'src/firebase/firebase.service';
 import { CreateUserDto } from 'src/common/dtos';
-import { UserRecord } from 'firebase-admin/lib/auth/user-record';
 
 @Injectable()
 export class AuthService {
@@ -12,7 +11,8 @@ export class AuthService {
 
     async create(dto: CreateUserDto) {
         try {
-            return await this.auth.createUser(dto);
+            const displayName = `${dto.firstname} ${dto.lastname}`;
+            return await this.auth.createUser({ ...dto, displayName });
         } catch (err) {
             this.logger.error("Couldn't create a new user");
             console.error(err);
