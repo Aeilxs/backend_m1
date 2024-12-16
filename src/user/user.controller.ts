@@ -5,7 +5,7 @@ import { UserService } from './user.service';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { UserInfoDto } from 'src/common/dtos/user.dtos';
 
-@ApiTags('user') // Regroupe les routes dans une catégorie Swagger "user"
+@ApiTags('user')
 @Controller('user')
 export class UserController {
     constructor(private readonly userService: UserService) {}
