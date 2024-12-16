@@ -25,4 +25,9 @@ export class FileController {
     ): Promise<string> {
         return this.fileService.getFileUrl(u.uid, fileName);
     }
+
+    @Get()
+    async getAllFiles(@User() u: DecodedIdToken) {
+        return this.fileService.getUserFiles(u.uid);
+    }
 }

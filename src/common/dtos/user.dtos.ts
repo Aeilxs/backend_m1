@@ -19,3 +19,5 @@ export class CreateUserDto {
     @MinLength(6, { message: 'Password must be 6 chars length' })
     password: string;
 }
+
+export class UpdateUserDto {}

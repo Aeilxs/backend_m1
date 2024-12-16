@@ -32,7 +32,6 @@ export class FileService {
         });
     }
 
-    // Récupérer un fichier depuis Firebase Storage
     async getFileUrl(userId: string, fileName: string): Promise<string> {
         this.logger.log(`Generating temporary URL for file ${fileName} for user ${userId}`);
 
@@ -48,5 +47,17 @@ export class FileService {
         } catch (error) {
             this.logger.error('Error generating signed URL', error);
         }
+    }
+
+    async getUserFiles(uid: string): Promise<string[]> {
+        this.logger.log(`Getting all files for user ${uid}`);
+
+        const options = {
+            prefix: `users/${uid}/`,
+        };
+
+        const [files] = await this.bucket.getFiles(options);
+        const fnames = files.map((f) => f.name);
+        return fnames;
     }
 }
