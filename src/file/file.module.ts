@@ -8,5 +8,6 @@ import { FileController } from './file.controller';
     imports: [FirebaseModule],
     providers: [FileService, FirebaseService],
     controllers: [FileController],
+    exports: [FileService],
 })
 export class FileModule {}

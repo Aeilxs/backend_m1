@@ -1,10 +1,12 @@
 import { Controller, Get, HttpStatus } from '@nestjs/common';
 import { ApiResponse } from '@nestjs/swagger';
-import { Public } from '@decorators';
+import { Public, User } from '@decorators';
+import { DecodedIdToken } from 'firebase-admin/lib/auth/token-verifier';
+import { AppService } from './app.service';
 
 @Controller()
 export class AppController {
-    constructor() {}
+    constructor(private readonly appService: AppService) {}
 
     @ApiResponse({ status: HttpStatus.OK, description: "Check if it's working" })
     @Get('test')
@@ -16,5 +18,10 @@ export class AppController {
     @Get('test/protected')
     async getProtectedHello(): Promise<string> {
         return 'Token ok !';
+    }
+
+    @Get('me')
+    async getUserInformations(@User() u: DecodedIdToken) {
+        return this.appService.getAllUserInformations(u.uid);
     }
 }

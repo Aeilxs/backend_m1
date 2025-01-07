@@ -11,12 +11,11 @@ export class UserService {
     async createUserInfo(uid: string, dto: UserInfoDto) {
         this.logger.log(`Creating user info for UID: ${uid}`);
 
-        const userRef = this.firestore.collection('users').doc(uid); // Référence au document utilisateur
-
+        const userRef = this.firestore.collection('users').doc(uid);
         try {
             await userRef.set({
-                ...dto, // Sauvegarder les données envoyées
-                createdAt: new Date(), // Ajouter la date de création
+                ...dto,
+                createdAt: new Date(),
             });
 
             this.logger.log(`User info created for UID: ${uid}`);
@@ -47,5 +46,10 @@ export class UserService {
             this.logger.error(`Failed to update user info for UID: ${uid}`, error.stack);
             throw error;
         }
+    }
+
+    async getUserInfo(uid: string) {
+        const userRef = this.firestore.collection('users').doc(uid);
+        return (await userRef.get()).data();
     }
 }

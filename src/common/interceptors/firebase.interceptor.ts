@@ -20,7 +20,6 @@ export class FirebaseInterceptor implements NestInterceptor {
     intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
         return next.handle().pipe(
             catchError((error) => {
-                // If not firebase admin errors throw
                 if (!error.code || !error.code.startsWith('auth/')) {
                     throw error;
                 }
