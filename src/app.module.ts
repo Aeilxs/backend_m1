@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { FileModule } from './file/file.module';
 import { UserModule } from './user/user.module';
 import { AppService } from './app.service';
+import { KafkaModule } from './kafka/kafka.module';
 
 @Module({
     imports: [
@@ -14,6 +15,7 @@ import { AppService } from './app.service';
         AuthModule,
         FileModule,
         UserModule,
+        KafkaModule,
     ],
     controllers: [AppController],
     providers: [AppService],
