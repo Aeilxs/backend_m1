@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { AuthService } from 'src/auth/auth.service';
 import { UserInfoDto } from 'src/common/dtos/user.dtos';
 import { FirebaseService } from 'src/firebase/firebase.service';
 
@@ -6,11 +7,19 @@ import { FirebaseService } from 'src/firebase/firebase.service';
 export class UserService {
     private logger = new Logger(UserService.name);
     private readonly firestore = this.firebaseService.getFirestore();
-    constructor(private readonly firebaseService: FirebaseService) {}
+    constructor(
+        private readonly firebaseService: FirebaseService,
+        private readonly authService: AuthService,
+    ) {}
 
     async createUserInfo(uid: string, dto: UserInfoDto) {
         this.logger.log(`Creating user info for UID: ${uid}`);
-
+        const [firstname, lastname] = (await this.authService.getUserByUid(uid)).displayName.split(
+            ' ',
+        );
+        dto.firstname = firstname;
+        dto.lastname = lastname;
+        this.logger.log(`Found firstname: '${firstname}' lastname: '${lastname}'`);
         const userRef = this.firestore.collection('users').doc(uid);
         try {
             await userRef.set({
@@ -28,9 +37,13 @@ export class UserService {
 
     async updateUserInfo(uid: string, dto: UserInfoDto) {
         this.logger.log(`Updating user info for UID: ${uid}`);
-
+        const [firstname, lastname] = (await this.authService.getUserByUid(uid)).displayName.split(
+            ' ',
+        );
+        dto.firstname = firstname;
+        dto.lastname = lastname;
+        this.logger.log(`Found firstname: '${firstname}' lastname: '${lastname}'`);
         const userRef = this.firestore.collection('users').doc(uid);
-
         try {
             await userRef.set(
                 {

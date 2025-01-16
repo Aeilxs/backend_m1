@@ -16,6 +16,7 @@ import { KafkaService } from './kafka.service';
                     },
                     consumer: {
                         groupId: 'nestjs-group',
+                        allowAutoTopicCreation: true,
                     },
                 },
             },

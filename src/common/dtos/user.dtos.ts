@@ -60,6 +60,16 @@ export class UserInfoDto {
     @IsString()
     pet?: string;
 
+    @ApiProperty({ example: 'Jean' })
+    @IsString()
+    @IsOptional()
+    firstname: string;
+
+    @ApiProperty({ example: 'Jean' })
+    @IsString()
+    @IsOptional()
+    lastname: string;
+
     @ApiProperty({ example: 'Radiologue', description: 'Profession of the user' })
     @IsString()
     @IsOptional()
