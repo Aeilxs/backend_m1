@@ -37,6 +37,8 @@ export enum MaritalStatus {
 }
 
 export class UserInfoDto {
+    email: string;
+
     @ApiProperty({ example: 30, description: 'Age of the user' })
     @IsNumber()
     @IsOptional()

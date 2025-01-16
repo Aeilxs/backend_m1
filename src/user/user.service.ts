@@ -14,11 +14,11 @@ export class UserService {
 
     async createUserInfo(uid: string, dto: UserInfoDto) {
         this.logger.log(`Creating user info for UID: ${uid}`);
-        const [firstname, lastname] = (await this.authService.getUserByUid(uid)).displayName.split(
-            ' ',
-        );
+        const authInfo = await this.authService.getUserByUid(uid);
+        const [firstname, lastname] = authInfo.displayName.split(' ');
         dto.firstname = firstname;
         dto.lastname = lastname;
+        dto.email = authInfo.email;
         this.logger.log(`Found firstname: '${firstname}' lastname: '${lastname}'`);
         const userRef = this.firestore.collection('users').doc(uid);
         try {
