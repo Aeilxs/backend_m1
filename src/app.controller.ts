@@ -17,7 +17,6 @@ export class AppController {
     @Get('test')
     @Public()
     async getHello(): Promise<string> {
-        this.kafkaService.sendMessage('myTopic', { key: 'myMessage' });
         return "It's workingzz !\n";
     }
 
@@ -31,8 +30,8 @@ export class AppController {
         return this.appService.getAllUserInformations(u.uid);
     }
 
-    @MessagePattern('myTopic')
+    @MessagePattern('test-topic')
     handleMsg(@Payload() msg: any) {
-        console.log('msg from kafka: ', msg.value);
+        console.log('msg from kafka: ', JSON.stringify(msg));
     }
 }

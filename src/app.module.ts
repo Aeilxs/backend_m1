@@ -15,7 +15,7 @@ import { KafkaModule } from './kafka/kafka.module';
         AuthModule,
         FileModule,
         UserModule,
-        KafkaModule,
+        KafkaModule.register(),
     ],
     controllers: [AppController],
     providers: [AppService],

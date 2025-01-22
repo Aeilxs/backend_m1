@@ -12,7 +12,7 @@ export class FileController {
     constructor(private readonly fileService: FileService) {}
 
     /**
-     * POST /files/upload
+     * @url POST /files/upload
      */
     @Post('upload')
     @UseInterceptors(FileInterceptor('file'))

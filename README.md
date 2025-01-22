@@ -5,11 +5,6 @@
 docker-compose --profile dev up
 ```
 
-```bash
-# prod (pas de hotreload)
-docker-compose --profile prod up --build
-```
-
 ## Check Auth
 
 ```bash
@@ -19,3 +14,8 @@ curl -X POST -H "Content-Type: application/json" -d '{
     "returnSecureToken": true
 }' "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=FIREBASE_API_KEY"
 ```
+
+## Doc
+
+[kafka ui](http://localhost:8080/ui)
+[swagger](http://localhost:3000/doc)

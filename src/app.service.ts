@@ -9,6 +9,7 @@ export class AppService {
         private readonly fileService: FileService,
         private readonly userService: UserService,
     ) {}
+
     async getAllUserInformations(uid: string) {
         this.loggerService.log('Retrieving all user informations for user: ', uid);
         const profile = await this.userService.getUserInfo(uid);
