@@ -12,6 +12,9 @@ import { DecodedIdToken } from 'firebase-admin/lib/auth/token-verifier';
 export class AuthController {
     constructor(private readonly authService: AuthService) {}
 
+    /**
+     * POST /auth/signin
+     */
     @Public()
     @ApiResponse({ status: HttpStatus.CREATED, description: 'New user created' })
     @Post('signin')
@@ -20,6 +23,9 @@ export class AuthController {
         return new ApiResponseDto(HttpStatus.CREATED, 'User created', userRecord);
     }
 
+    /**
+     * GET /auth/me
+     */
     @Get('me')
     @ApiResponse({ status: HttpStatus.OK, description: 'Get user profile' })
     async me(@User() u: DecodedIdToken) {

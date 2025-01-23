@@ -1,4 +1,5 @@
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { ApiResponseDto } from '@dtos';
+import { HttpException, HttpStatus, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { FirebaseService } from 'src/firebase/firebase.service';
 
 @Injectable()
@@ -32,10 +33,10 @@ export class FileService {
         });
     }
 
-    async getFileUrl(userId: string, fileName: string): Promise<string> {
-        this.logger.log(`Generating temporary URL for file ${fileName} for user ${userId}`);
+    async getFileUrl(uid: string, fileName: string): Promise<string> {
+        this.logger.log(`Generating temporary URL for file ${fileName} for user ${uid}`);
 
-        const file = this.bucket.file(`users/${userId}/${fileName}`);
+        const file = this.bucket.file(`users/${uid}/${fileName}`);
 
         try {
             const [url] = await file.getSignedUrl({
@@ -59,5 +60,48 @@ export class FileService {
         const [files] = await this.bucket.getFiles(options);
         const fnames = files.map((f) => f.name);
         return fnames;
+    }
+
+    async deleteFile(userId: string, fname: string) {
+        this.logger.log(`Deleting file ${fname} for user ${userId}`);
+
+        const file = this.bucket.file(`users/${userId}/${fname}`);
+        const [exists] = await file.exists();
+
+        if (!exists) throw new NotFoundException(`File ${fname} for user ${userId} not found`);
+
+        try {
+            await file.delete();
+            return new ApiResponseDto(HttpStatus.OK, `File ${fname} for user ${userId} deleted successfully`);
+        } catch (error) {
+            this.logger.error(`Error deleting file ${fname} for user ${userId}`, error);
+            throw new HttpException('Failed to delete the file', HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    async deleteAllUserFiles(uid: string) {
+        this.logger.log(`Deleting all files for user ${uid}`);
+
+        const options = {
+            prefix: `users/${uid}/`,
+        };
+
+        try {
+            const [files] = await this.bucket.getFiles(options);
+
+            if (files.length === 0) return new ApiResponseDto(HttpStatus.OK, `No files found for user ${uid}`);
+
+            await Promise.all(
+                files.map(async (file) => {
+                    await file.delete();
+                    this.logger.log(`Deleted file ${file.name}`);
+                }),
+            );
+
+            return new ApiResponseDto(HttpStatus.OK, `All files for user ${uid} deleted successfully`);
+        } catch (error) {
+            this.logger.error(`Error deleting files for user ${uid}`, error);
+            throw new HttpException('Failed to delete user files', HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }
