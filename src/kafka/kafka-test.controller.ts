@@ -9,7 +9,7 @@ export class KafkaController {
     @Get('send')
     @Public()
     async listenToMessages() {
-        this.kafkaService.sendMessage('test-topic', {
+        this.kafkaService.emitMessage('test-topic', {
             user: {
                 id: '123456',
                 name: 'John Doe',

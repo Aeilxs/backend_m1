@@ -1,13 +1,17 @@
 import { ApiResponseDto } from '@dtos';
 import { HttpException, HttpStatus, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { FirebaseService } from 'src/firebase/firebase.service';
+import { KafkaService } from 'src/kafka/kafka.service';
 
 @Injectable()
 export class FileService {
     private logger = new Logger(FileService.name);
     private bucket = this.firebaseService.getBucket();
 
-    constructor(private readonly firebaseService: FirebaseService) {}
+    constructor(
+        private readonly firebaseService: FirebaseService,
+        private readonly kafkaService: KafkaService,
+    ) {}
 
     async uploadFile(userId: string, file: Express.Multer.File): Promise<string> {
         this.logger.log(`Uploading file for user ${userId}`);
@@ -25,8 +29,10 @@ export class FileService {
 
         return new Promise((resolve, reject) => {
             stream.on('error', (err) => reject(err));
-            stream.on('finish', () => {
-                resolve(`users/${userId}/${file.originalname}`);
+            stream.on('finish', async () => {
+                const fileUrl = `users/${userId}/${file.originalname}`;
+                await this.kafkaService.emitMessage('file-upload', { uid: userId, url: fileUrl });
+                resolve(fileUrl);
             });
 
             stream.end(file.buffer);
@@ -72,6 +78,7 @@ export class FileService {
 
         try {
             await file.delete();
+            await this.kafkaService.emitMessage('file-delete', { uid: userId, url: fname });
             return new ApiResponseDto(HttpStatus.OK, `File ${fname} for user ${userId} deleted successfully`);
         } catch (error) {
             this.logger.error(`Error deleting file ${fname} for user ${userId}`, error);
@@ -98,6 +105,7 @@ export class FileService {
                 }),
             );
 
+            await this.kafkaService.emitMessage('file-delete', { uid, url: '*' });
             return new ApiResponseDto(HttpStatus.OK, `All files for user ${uid} deleted successfully`);
         } catch (error) {
             this.logger.error(`Error deleting files for user ${uid}`, error);

@@ -14,10 +14,10 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
         await this.kafkaClient.close();
     }
 
-    async sendMessage(topic: string, message: any) {
+    async emitMessage(topic: string, message: any) {
         try {
             console.log(`Sending message to topic ${topic}`);
-            await this.kafkaClient.send(topic, message).toPromise();
+            await this.kafkaClient.emit(topic, message).toPromise();
             console.log('Message sent successfully');
         } catch (error) {
             console.error('Error sending Kafka message:', error);
