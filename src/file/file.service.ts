@@ -31,7 +31,7 @@ export class FileService {
             stream.on('error', (err) => reject(err));
             stream.on('finish', async () => {
                 const fileUrl = `users/${userId}/${file.originalname}`;
-                await this.kafkaService.emitMessage('file-upload', { uid: userId, url: fileUrl });
+                await this.kafkaService.emitMessage('file-upload', { user_uuid: userId, file_url: fileUrl });
                 resolve(fileUrl);
             });
 
@@ -78,7 +78,7 @@ export class FileService {
 
         try {
             await file.delete();
-            await this.kafkaService.emitMessage('file-delete', { uid: userId, url: fname });
+            await this.kafkaService.emitMessage('file-delete', { user_uuid: userId, file_url: fname });
             return new ApiResponseDto(HttpStatus.OK, `File ${fname} for user ${userId} deleted successfully`);
         } catch (error) {
             this.logger.error(`Error deleting file ${fname} for user ${userId}`, error);
@@ -105,7 +105,7 @@ export class FileService {
                 }),
             );
 
-            await this.kafkaService.emitMessage('file-delete', { uid, url: '*' });
+            await this.kafkaService.emitMessage('file-delete', { user_uuid: uid, file_url: '*' });
             return new ApiResponseDto(HttpStatus.OK, `All files for user ${uid} deleted successfully`);
         } catch (error) {
             this.logger.error(`Error deleting files for user ${uid}`, error);

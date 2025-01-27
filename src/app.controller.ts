@@ -1,4 +1,4 @@
-import { Controller, Get, HttpStatus } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Post, Query } from '@nestjs/common';
 import { ApiResponse } from '@nestjs/swagger';
 import { Public, User } from '@decorators';
 import { DecodedIdToken } from 'firebase-admin/lib/auth/token-verifier';
@@ -28,6 +28,11 @@ export class AppController {
     @Get('me')
     async getUserInformations(@User() u: DecodedIdToken) {
         return this.appService.getAllUserInformations(u.uid);
+    }
+
+    @Get('ai/generate-text')
+    async askGenerativeModel(@User() u: DecodedIdToken, @Query('prompt') prompt: string) {
+        return this.appService.askGenerativeModel(u.uid, prompt);
     }
 
     @MessagePattern('test-topic')

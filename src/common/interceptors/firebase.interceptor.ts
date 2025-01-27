@@ -1,11 +1,4 @@
-import {
-    Injectable,
-    NestInterceptor,
-    ExecutionContext,
-    CallHandler,
-    HttpStatus,
-    HttpException,
-} from '@nestjs/common';
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler, HttpStatus, HttpException } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
@@ -20,12 +13,12 @@ export class FirebaseInterceptor implements NestInterceptor {
     intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
         return next.handle().pipe(
             catchError((error) => {
+                console.log('ERROR: ', error);
                 if (!error.code || !error.code.startsWith('auth/')) {
                     throw error;
                 }
 
-                const statusCode =
-                    this.firebaseErrorMap.get(error.code) || HttpStatus.INTERNAL_SERVER_ERROR;
+                const statusCode = this.firebaseErrorMap.get(error.code) || HttpStatus.INTERNAL_SERVER_ERROR;
 
                 throw new HttpException(
                     {
