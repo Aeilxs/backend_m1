@@ -7,6 +7,7 @@ import { FileModule } from './file/file.module';
 import { UserModule } from './user/user.module';
 import { AppService } from './app.service';
 import { KafkaModule } from './kafka/kafka.module';
+import { VertexAIModule } from './vertex-ai/vertex-ai.module';
 
 @Module({
     imports: [
@@ -16,6 +17,7 @@ import { KafkaModule } from './kafka/kafka.module';
         FileModule,
         UserModule,
         KafkaModule.register(),
+        VertexAIModule,
     ],
     controllers: [AppController],
     providers: [AppService],

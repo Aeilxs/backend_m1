@@ -54,6 +54,10 @@ services:
       - "3000:3000"
     volumes:
       - .:/app
+      - ./keys/vertex-ai-serviceAccountKey.json:/vertex-ai-serviceAccountKey.json:ro
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/vertex-ai-serviceAccountKey.json
+      - GCP_PROJECT_ID=contract-central-c710c
     command: ["sh", "-c", "wait-for-it kafka:9092 -- npm run start:dev"]
     depends_on:
       - kafka

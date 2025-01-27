@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { FileService } from './file/file.service';
 import { UserService } from './user/user.service';
+import { VertexAIService } from './vertex-ai/vertex-ai.service';
 
 @Injectable()
 export class AppService {
@@ -8,6 +9,7 @@ export class AppService {
     constructor(
         private readonly fileService: FileService,
         private readonly userService: UserService,
+        private readonly vertexService: VertexAIService,
     ) {}
 
     async getAllUserInformations(uid: string) {
@@ -18,5 +20,14 @@ export class AppService {
             profile: profile,
             files: files,
         };
+    }
+
+    async askGenerativeModel(uid: string, prompt: string) {
+        this.loggerService.log('Asking generative model for user: ', uid);
+        this.loggerService.log('Prompt: ', prompt);
+        const files = await this.fileService.getUserFiles(uid);
+        this.loggerService.log('Files: ', files);
+
+        return this.vertexService.generateTextContent(prompt, files);
     }
 }
