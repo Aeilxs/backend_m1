@@ -1,10 +1,11 @@
-import { Injectable, OnModuleInit, OnModuleDestroy, Inject } from '@nestjs/common';
-import { ClientKafka } from '@nestjs/microservices';
+import { Injectable, OnModuleInit, OnModuleDestroy, Inject, Logger } from '@nestjs/common';
+import { ClientKafka, MessagePattern, Payload } from '@nestjs/microservices';
 import { randomUUID } from 'crypto';
 
 @Injectable()
 export class KafkaService implements OnModuleInit, OnModuleDestroy {
-    private pendingRequests = new Map<string, (value: any) => void>();
+    private logger = new Logger(KafkaService.name);
+    private coverageResponses = new Map<string, any>();
 
     constructor(@Inject('KAFKA_SERVICE') private readonly kafkaClient: ClientKafka) {}
 
@@ -27,43 +28,15 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
         }
     }
 
-    async sendAndWait(topic: string, message: any, timeout = 10000): Promise<any> {
-        const request_id = randomUUID();
-        const payload = { ...message, request_id };
-        console.log('payload: ', payload);
-
-        return new Promise((resolve, reject) => {
-            const timer = setTimeout(() => {
-                this.pendingRequests.delete(request_id);
-                reject(new Error('Kafka response timeout'));
-            }, timeout);
-
-            this.pendingRequests.set(request_id, (data) => {
-                clearTimeout(timer);
-                resolve(data);
-            });
-
-            this.kafkaClient.emit(topic, payload).subscribe({
-                error: (err) => {
-                    clearTimeout(timer);
-                    this.pendingRequests.delete(request_id);
-                    reject(err);
-                },
-            });
-        });
+    getCoverageResponse(requestId: string): any {
+        const r = this.coverageResponses.get(requestId);
+        if (r === 'undefined') {
+            return `No response for request id ${requestId}`;
+        }
+        return r;
     }
 
-    private handleKafkaResponse(message: any) {
-        try {
-            const value = JSON.parse(message.value.toString());
-            const { request_id, data } = value;
-
-            if (this.pendingRequests.has(request_id)) {
-                this.pendingRequests.get(request_id)(data);
-                this.pendingRequests.delete(request_id);
-            }
-        } catch (error) {
-            console.error('Error processing Kafka response:', error);
-        }
+    setCoverageResponse(requestId: string, response: any) {
+        this.coverageResponses.set(requestId, response);
     }
 }

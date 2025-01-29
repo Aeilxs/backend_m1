@@ -22,7 +22,7 @@ export class VertexAIService {
                 role: 'system',
                 parts: [
                     {
-                        text: 'You are a contract management assistant. You help users by reading the PDF files they provide, which contain contractual information. Respond only using the information extracted from the PDF files. Do not make up or infer information that is not explicitly stated in the files.',
+                        text: 'You are a contract management assistant. You help users by reading the PDF files they provide, which contain personnal contractual information. Respond only using the information extracted from the PDF files. Do not make up or infer information that is not explicitly stated in the files.',
                     },
                 ],
             },

@@ -22,13 +22,4 @@ export class AuthController {
         const userRecord = await this.authService.create(dto);
         return new ApiResponseDto(HttpStatus.CREATED, 'User created', userRecord);
     }
-
-    /**
-     * GET /auth/me
-     */
-    @Get('me')
-    @ApiResponse({ status: HttpStatus.OK, description: 'Get user profile' })
-    async me(@User() u: DecodedIdToken) {
-        return await this.authService.getUserByUid(u.uid);
-    }
 }
