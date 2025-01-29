@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { FileService } from './file/file.service';
 import { UserService } from './user/user.service';
 import { VertexAIService } from './vertex-ai/vertex-ai.service';
+import { KafkaService } from './kafka/kafka.service';
 
 @Injectable()
 export class AppService {
@@ -10,6 +11,7 @@ export class AppService {
         private readonly fileService: FileService,
         private readonly userService: UserService,
         private readonly vertexService: VertexAIService,
+        private readonly kafkaService: KafkaService,
     ) {}
 
     async getAllUserInformations(uid: string) {
@@ -29,5 +31,12 @@ export class AppService {
         this.loggerService.log('Files: ', files);
 
         return this.vertexService.generateTextContent(prompt, files);
+    }
+
+    async askCoverageQuery(uid: string, prompt: string) {
+        this.loggerService.log('Asking coverage query for user: ', uid);
+        const r = await this.kafkaService.sendAndWait('coverage-query', { user_uuid: uid, user_query: prompt });
+        this.loggerService.log('Coverage query response: ', r);
+        return r;
     }
 }

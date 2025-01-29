@@ -35,6 +35,11 @@ export class AppController {
         return this.appService.askGenerativeModel(u.uid, prompt);
     }
 
+    @Get('ai/coverage-query')
+    async askCoverageQuery(@User() u: DecodedIdToken, @Query('prompt') prompt: string) {
+        return this.appService.askCoverageQuery(u.uid, prompt);
+    }
+
     @MessagePattern('test-topic')
     handleMsg(@Payload() msg: any) {
         console.log('msg from kafka: ', JSON.stringify(msg));

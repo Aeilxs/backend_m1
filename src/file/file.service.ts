@@ -78,7 +78,10 @@ export class FileService {
 
         try {
             await file.delete();
-            await this.kafkaService.emitMessage('file-delete', { user_uuid: userId, file_url: fname });
+            await this.kafkaService.emitMessage('file-delete', {
+                user_uuid: userId,
+                file_url: `users/${userId}/${fname}`,
+            });
             return new ApiResponseDto(HttpStatus.OK, `File ${fname} for user ${userId} deleted successfully`);
         } catch (error) {
             this.logger.error(`Error deleting file ${fname} for user ${userId}`, error);
