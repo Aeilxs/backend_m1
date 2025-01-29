@@ -2,7 +2,7 @@
 
 ```bash
 # dev (avec hotreload)
-docker-compose --profile dev up
+docker compose --profile dev up
 ```
 
 ## Check Auth

@@ -35,4 +35,12 @@ export class UserController {
     async updateUserInfo(@User() u: DecodedIdToken, @Body() dto: UserInfoDto) {
         return await this.userService.updateUserInfo(u.uid, dto);
     }
+
+    /**
+     * POST /user/contact
+     */
+    @Post('contact')
+    async contactAdmin(@Body() dto: { email: string; message: string }) {
+        return dto;
+    }
 }
