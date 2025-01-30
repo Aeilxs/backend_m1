@@ -41,6 +41,7 @@ export class UserController {
      */
     @Post('contact')
     async contactAdmin(@Body() dto: { email: string; message: string }) {
+        // TODO
         return dto;
     }
 }

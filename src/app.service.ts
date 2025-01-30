@@ -28,6 +28,10 @@ export class AppService {
     async askGenerativeModel(uid: string, prompt: string) {
         this.loggerService.log(`Asking generative model for user: ${uid}`);
         const files = await this.fileService.getUserFiles(uid);
+        if (files.length === 0) {
+            throw new HttpException('Add files before requesting AI.', 404);
+        }
+
         return this.vertexService.generateTextContent(prompt, files);
     }
 
