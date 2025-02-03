@@ -32,7 +32,7 @@ export class AppService {
             throw new HttpException('Add files before requesting AI.', 404);
         }
 
-        return this.vertexService.generateTextContent(prompt, files, this.userService.getUserInfo(uid));
+        return this.vertexService.generateTextContent(prompt, files, await this.userService.getUserInfo(uid));
     }
 
     async askCoverageQuery(uid: string, prompt: string) {
