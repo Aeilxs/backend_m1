@@ -1,68 +1,70 @@
 import { VertexAI } from '@google-cloud/vertexai';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
+import { UserInfoDto } from 'src/common/dtos/user.dtos';
 
-const prompt = `
-Vous êtes un assistant expert en gestion de contrats et en conseil en assurances.
-Votre mission est de répondre précisément à l'utilisateur.
-Les contrats fournis par l’utilisateur sont déjà signés et en cours de validité.
+// const reasoningPrompt = `
+// Vous êtes un expert en gestion de contrats et en conseil en assurances.
+// Votre mission est d'analyser la situation d'un utilisateur en fonction de ses informations et de ses contrats signés.
 
-ex: Un utilisateur demande si il doit signer un contrat d'assurance habitation alors qu'il est déjà couvert.
+// ### Objectif :
+// - Construire un raisonnement structuré pour comprendre si l'utilisateur doit souscrire à une nouvelle assurance.
+// - Comparer ses contrats actuels avec la situation demandée.
+// - Identifier les garanties manquantes, les doublons, ou les coûts excessifs.
 
-### Consignes :
+// ### Format de réponse :
+// - **Synthèse des contrats** : Liste des contrats fournis et leur couverture.
+// - **Analyse des besoins** : Évaluation des risques et besoins de l'utilisateur.
+// - **Comparaison** : Évaluer si un nouveau contrat est nécessaire ou redondant.
+// - **Recommandation préliminaire** : "Il semble nécessaire de souscrire", "Pas besoin de souscrire", "À vérifier plus en détail".
+// `;
 
-1. **Prendre les documents comme référence absolue**
-   - Les documents contractuels fournis sont signés et en vigueur.
-   - Aucune hypothèse sur une potentielle négociation ou modification à venir.
+// const finalDecisionPrompt = `
+// Sur la base du raisonnement structuré ci-dessous, fournissez une réponse claire et actionnable à l'utilisateur.
+// Votre objectif est de donner une conclusion précise et de recommander immédiatement une action.
+// Les analyses sur les contrats ont déjà été faites et considère le raisonnement structuré comme acquis.
+// ### Format attendu :
+// - **Synthèse rapide** : 2-3 lignes expliquant la situation.
+// - **Verdict** : "**Signer**", "**Ne pas signer**", "**Vérifier**".
+// - **Justification** : Pourquoi cette décision ?
+// - **Actions immédiates** : Résilier un contrat ? Contacter un courtier ? Comparer avec une offre ?
 
-2. **Réponse directe et actionnable**
-   - Donnez une conclusion ferme, maximisant la réduction des coûts pour l'utilisateur.
-   - Pas d’ambiguïté, pas de réponse trop neutre.
-
-3. **Analyse pragmatique et optimisation des coûts**
-   - Identifier les clauses problématiques, les doublons de garanties, ou les coûts excessifs.
-   - Expliquer ce que l’utilisateur doit faire maintenant (ex : résilier, négocier, comparer avec un autre contrat).
-
-4. **Format structuré pour les réponses** :
-   - **Synthèse initiale** : Points-clés des documents fournis.
-   - **Analyse détaillée** : Forces et faiblesses du contrat.
-   - **Verdict final** : **Signer**, **Ne pas signer**, **Réfléchir** avec justification.
-   - **Actions recommandées** : Que faire immédiatement ?
-`;
-
+// Réfléchissez avec pragmatisme et maximisez l'optimisation des coûts.
+// `;
 
 @Injectable()
 export class VertexAIService {
     private readonly vertexAI: VertexAI;
     private readonly generativeTextModel: any;
-    private readonly generativeVisionModel: any;
+    private readonly logger = new Logger(VertexAIService.name);
 
     constructor() {
         const project = 'contract-central-c710c';
         const location = 'us-central1';
         const textModel = 'gemini-1.5-pro';
-        const visionModel = 'gemini-1.5-pro';
 
         this.vertexAI = new VertexAI({ project, location });
 
         // Configure generative text model
         this.generativeTextModel = this.vertexAI.getGenerativeModel({
             model: textModel,
-            systemInstruction: {
-                role: 'system',
-                parts: [
-                    {
-                        text: prompt,
-                    },
-                ],
-            },
-        });
-
-        this.generativeVisionModel = this.vertexAI.getGenerativeModel({
-            model: visionModel,
         });
     }
 
-    async generateTextContent(prompt: string, bucketUrls: string[], userInfo: any): Promise<any> {
+    async generateTextContent(prompt: string, bucketUrls: string[], userInfo: UserInfoDto): Promise<any> {
+        let displayName = `${userInfo.firstname} ${userInfo.lastname}`;
+
+        if (
+            userInfo.firstname === undefined ||
+            userInfo.lastname === undefined ||
+            userInfo.firstname === '' ||
+            userInfo.lastname === ''
+        ) {
+            displayName = "l'utilisateur";
+        }
+
+        const reasoningPrompt = getReasoningPrompt(displayName);
+        const finalDecisionPrompt = getFinalDecisionPrompt(displayName);
+
         const fileParts = bucketUrls.map((url) => ({
             fileData: {
                 fileUri: 'gs://contract-central-c710c.firebasestorage.app/' + url,
@@ -70,17 +72,86 @@ export class VertexAIService {
             },
         }));
 
-        const textPart = { text: `INFO UTILISATEUR: ${JSON.stringify(userInfo)} ${prompt}` };
+        const textPart = { text: `INFO ${displayName}: ${JSON.stringify(userInfo)} REQUETE ${displayName}: ${prompt}` };
 
-        const request = {
+        // 1ere passe : Raisonnement structuré
+        const reasoningRequest = {
             contents: [
                 {
                     role: 'user',
-                    parts: [textPart, ...fileParts],
+                    parts: [{ text: reasoningPrompt }, textPart, ...fileParts],
                 },
             ],
         };
-        const result = await this.generativeTextModel.generateContent(request);
+
+        const reasoningResult = await this.generativeTextModel.generateContent(reasoningRequest);
+        const reasoningText =
+            reasoningResult?.response?.candidates?.[0]?.content?.parts?.[0]?.text ||
+            'Erreur : aucun raisonnement trouvé.';
+
+        this.logger.log('Raisonnement structuré :', reasoningText); // Debugging
+
+        // 2eme passe : Décision finale
+        const decisionRequest = {
+            contents: [
+                {
+                    role: 'user',
+                    parts: [{ text: finalDecisionPrompt }, { text: `### Raisonnement structuré:\n${reasoningText}` }],
+                },
+            ],
+        };
+
+        const result = await this.generativeTextModel.generateContent(decisionRequest);
         return result;
     }
+}
+
+function getReasoningPrompt(userName: string): string {
+    return `
+Vous êtes un expert en gestion de contrats et en conseil en assurances.
+Votre mission est d'analyser la situation de **${userName}** en fonction de ses informations et de ses contrats signés.
+
+### Objectif :
+- Construire un raisonnement structuré pour comprendre si **${userName}** doit souscrire à une nouvelle assurance.
+- Comparer ses contrats actuels avec la situation demandée.
+- Identifier les garanties manquantes, les doublons, ou les coûts excessifs.
+
+### Format de réponse :
+- **Synthèse des contrats** : Liste des contrats fournis et leur couverture.
+- **Analyse des besoins** : Évaluation des risques et besoins de **${userName}**.
+- **Comparaison** : Évaluer si un nouveau contrat est nécessaire ou redondant.
+- **Recommandation préliminaire** : "Il semble nécessaire de souscrire", "Pas besoin de souscrire", "À vérifier plus en détail".
+    `;
+}
+
+function getFinalDecisionPrompt(userName: string): string {
+    return `
+Sur la base du raisonnement structuré ci-dessous, fournissez une **réponse claire, actionnable et directement adressée à** ${userName}.
+Votre objectif est de donner une conclusion précise et de recommander immédiatement une action.
+
+### Contexte :
+- **Les analyses contractuelles ont déjà été faites** et doivent être considérées comme **acquises**.
+- **L'objectif est d'offrir une recommandation immédiate** à ${userName}, avec **un plan d'action clair**.
+
+### Format attendu :
+**Synthèse rapide** : Expliquer en **2-3 lignes** la situation actuelle de **${userName}**.
+**Recommandation immédiate** :
+   - "**Souscription recommandée**"
+   - "**Déjà couvert, aucun contrat nécessaire**"
+   - "**Pas couvert, contrat nécessaire ou optionnel**"
+   - "**Vérification complémentaire nécessaire**"
+**Justification** : Expliquez la décision en mettant en évidence **les garanties existantes et les éventuels manques**.
+**Actions immédiates** : Que doit faire **${userName}** ?
+   - **Résilier un contrat existant ?**
+   - **Comparer des offres ?**
+   - **Vérifier une clause spécifique ?**
+
+⚠ **Consignes importantes :**
+- **Soyez direct, concis et professionnel.**
+- **Utilisez le vouvoiement.**
+- **Évitez les réponses neutres ou floues** : l'utilisateur attend une action concrète.
+- **Ne faites pas de supposition** sur une renégociation de contrat.
+
+Vous vous adressez directement à **${userName}**, veillez à **rendre la réponse fluide et naturelle**.
+    `;
 }

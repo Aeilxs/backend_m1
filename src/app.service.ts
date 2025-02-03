@@ -4,6 +4,7 @@ import { UserService } from './user/user.service';
 import { VertexAIService } from './vertex-ai/vertex-ai.service';
 import { KafkaService } from './kafka/kafka.service';
 import { randomUUID } from 'crypto';
+import { UserInfoDto } from './common/dtos/user.dtos';
 
 @Injectable()
 export class AppService {
@@ -32,7 +33,11 @@ export class AppService {
             throw new HttpException('Add files before requesting AI.', 404);
         }
 
-        return this.vertexService.generateTextContent(prompt, files, await this.userService.getUserInfo(uid));
+        return this.vertexService.generateTextContent(
+            prompt,
+            files,
+            (await this.userService.getUserInfo(uid)) as UserInfoDto,
+        );
     }
 
     async askCoverageQuery(uid: string, prompt: string) {
