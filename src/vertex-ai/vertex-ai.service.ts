@@ -2,35 +2,6 @@ import { VertexAI } from '@google-cloud/vertexai';
 import { Injectable, Logger } from '@nestjs/common';
 import { UserInfoDto } from 'src/common/dtos/user.dtos';
 
-// const reasoningPrompt = `
-// Vous êtes un expert en gestion de contrats et en conseil en assurances.
-// Votre mission est d'analyser la situation d'un utilisateur en fonction de ses informations et de ses contrats signés.
-
-// ### Objectif :
-// - Construire un raisonnement structuré pour comprendre si l'utilisateur doit souscrire à une nouvelle assurance.
-// - Comparer ses contrats actuels avec la situation demandée.
-// - Identifier les garanties manquantes, les doublons, ou les coûts excessifs.
-
-// ### Format de réponse :
-// - **Synthèse des contrats** : Liste des contrats fournis et leur couverture.
-// - **Analyse des besoins** : Évaluation des risques et besoins de l'utilisateur.
-// - **Comparaison** : Évaluer si un nouveau contrat est nécessaire ou redondant.
-// - **Recommandation préliminaire** : "Il semble nécessaire de souscrire", "Pas besoin de souscrire", "À vérifier plus en détail".
-// `;
-
-// const finalDecisionPrompt = `
-// Sur la base du raisonnement structuré ci-dessous, fournissez une réponse claire et actionnable à l'utilisateur.
-// Votre objectif est de donner une conclusion précise et de recommander immédiatement une action.
-// Les analyses sur les contrats ont déjà été faites et considère le raisonnement structuré comme acquis.
-// ### Format attendu :
-// - **Synthèse rapide** : 2-3 lignes expliquant la situation.
-// - **Verdict** : "**Signer**", "**Ne pas signer**", "**Vérifier**".
-// - **Justification** : Pourquoi cette décision ?
-// - **Actions immédiates** : Résilier un contrat ? Contacter un courtier ? Comparer avec une offre ?
-
-// Réfléchissez avec pragmatisme et maximisez l'optimisation des coûts.
-// `;
-
 @Injectable()
 export class VertexAIService {
     private readonly vertexAI: VertexAI;
