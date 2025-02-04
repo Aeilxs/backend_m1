@@ -37,12 +37,6 @@ export class UserService {
 
     async updateUserInfo(uid: string, dto: UserInfoDto) {
         this.logger.log(`Updating user info for UID: ${uid}`);
-        const [firstname, lastname] = (await this.authService.getUserByUid(uid)).displayName.split(
-            ' ',
-        );
-        dto.firstname = firstname;
-        dto.lastname = lastname;
-        this.logger.log(`Found firstname: '${firstname}' lastname: '${lastname}'`);
         const userRef = this.firestore.collection('users').doc(uid);
         try {
             await userRef.set(
