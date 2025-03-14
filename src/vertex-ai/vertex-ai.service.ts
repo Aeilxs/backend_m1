@@ -103,7 +103,7 @@ Pour chaque contrat vous drevez répondre aux questions suivantes :
 - **Analyse des besoins** : Évaluation des risques et besoins de **${userName}**.
 - **Comparaison** : Évaluer si un nouveau contrat est nécessaire ou redondant.
 - **Recommandation préliminaire** : "Il semble nécessaire de souscrire", "Pas besoin de souscrire", "À vérifier plus en détail".
-    `;
+`;
 }
 
 function getFinalDecisionPrompt(userName: string): string {
@@ -114,6 +114,7 @@ Votre objectif est de donner une conclusion précise et de recommander immédiat
 ### Contexte :
 - **Les analyses contractuelles ont déjà été faites** et doivent être considérées comme **acquises**.
 - **L'objectif est d'offrir une recommandation immédiate** à ${userName}, avec **un plan d'action clair**.
+- **Privélégier les économies et le minimum d'overhead possible quant à la gestion des contrats.**
 
 ### Format attendu :
 **Synthèse rapide** : Expliquer en **2-3 lignes** la situation actuelle de **${userName}**.
@@ -142,6 +143,5 @@ Vous vous adressez directement à **${userName}**, veillez à **rendre la répon
 ✅ Recommandation immédiate (ex: "Déjà couvert, aucun contrat nécessaire")
 📜 Justification détaillée (précisant les documents à vérifier)
 📌 Actions immédiates (3 à 4 étapes concrètes)
-
 `;
 }
