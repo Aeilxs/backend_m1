@@ -4,9 +4,10 @@ import * as admin from 'firebase-admin';
 
 @Module({})
 export class FirebaseModule {
-    static forRoot(serviceAccount: admin.ServiceAccount): DynamicModule {
+    static forRoot(): DynamicModule {
         admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount),
+            credential: admin.credential.applicationDefault(),
+            storageBucket: 'contract-central-c710c.firebasestorage.app',
         });
 
         return {

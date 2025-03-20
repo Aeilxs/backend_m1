@@ -6,18 +6,18 @@ import { AuthModule } from './auth/auth.module';
 import { FileModule } from './file/file.module';
 import { UserModule } from './user/user.module';
 import { AppService } from './app.service';
-import { KafkaModule } from './kafka/kafka.module';
 import { VertexAIModule } from './vertex-ai/vertex-ai.module';
+import { PubSubModule } from './pub-sub/pub-sub.module';
 
 @Module({
     imports: [
         ConfigModule.forRoot({ isGlobal: true }),
-        FirebaseModule.forRoot(require(process.env.FIREBASE_CONFIG_CREDENTIAL)),
+        FirebaseModule.forRoot(),
         AuthModule,
         FileModule,
         UserModule,
-        KafkaModule.register(),
         VertexAIModule,
+        PubSubModule,
     ],
     controllers: [AppController],
     providers: [AppService],

@@ -6,7 +6,7 @@ import { Auth } from 'firebase-admin/lib/auth/auth';
 export class FirebaseService {
     private auth = admin.auth();
     private firestore = admin.firestore();
-    private storage = admin.storage().bucket(process.env.FIREBASE_CONFIG_BUCKET);
+    private storage = admin.storage().bucket('contract-central-c710c.firebasestorage.app');
 
     getAuth(): Auth {
         return this.auth;

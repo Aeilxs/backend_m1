@@ -1,7 +1,9 @@
 import { ApiResponseDto } from '@dtos';
+import { PubSub } from '@google-cloud/pubsub';
 import { HttpException, HttpStatus, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { FirebaseService } from 'src/firebase/firebase.service';
-import { KafkaService } from 'src/kafka/kafka.service';
+import { PubSubService } from 'src/pub-sub/pub-sub.service';
+// import { KafkaService } from 'src/kafka/kafka.service';
 
 @Injectable()
 export class FileService {
@@ -10,7 +12,8 @@ export class FileService {
 
     constructor(
         private readonly firebaseService: FirebaseService,
-        private readonly kafkaService: KafkaService,
+        private readonly pubSubService: PubSubService,
+        // private readonly kafkaService: KafkaService,
     ) {}
 
     async uploadFile(userId: string, file: Express.Multer.File): Promise<string> {
@@ -31,7 +34,8 @@ export class FileService {
             stream.on('error', (err) => reject(err));
             stream.on('finish', async () => {
                 const fileUrl = `users/${userId}/${file.originalname}`;
-                await this.kafkaService.emitMessage('file-upload', { user_uuid: userId, file_url: fileUrl });
+                await this.pubSubService.publishMessage('file-upload', { user_uuid: userId, file_url: fileUrl });
+                // await this.kafkaService.emitMessage('file-upload', { user_uuid: userId, file_url: fileUrl });
                 resolve(fileUrl);
             });
 
@@ -78,10 +82,14 @@ export class FileService {
 
         try {
             await file.delete();
-            await this.kafkaService.emitMessage('file-delete', {
+            await this.pubSubService.publishMessage('file-delete', {
                 user_uuid: userId,
                 file_url: `users/${userId}/${fname}`,
             });
+            // await this.kafkaService.emitMessage('file-delete', {
+            //     user_uuid: userId,
+            //     file_url: `users/${userId}/${fname}`,
+            // });
             return new ApiResponseDto(HttpStatus.OK, `File ${fname} for user ${userId} deleted successfully`);
         } catch (error) {
             this.logger.error(`Error deleting file ${fname} for user ${userId}`, error);
@@ -108,7 +116,8 @@ export class FileService {
                 }),
             );
 
-            await this.kafkaService.emitMessage('file-delete', { user_uuid: uid, file_url: '*' });
+            // await this.kafkaService.emitMessage('file-delete', { user_uuid: uid, file_url: '*' });
+            await this.pubSubService.publishMessage('file-delete', { user_uuid: uid, file_url: '*' });
             return new ApiResponseDto(HttpStatus.OK, `All files for user ${uid} deleted successfully`);
         } catch (error) {
             this.logger.error(`Error deleting files for user ${uid}`, error);
