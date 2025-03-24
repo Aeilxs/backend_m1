@@ -23,7 +23,7 @@ export class FileController {
     constructor(private readonly fileService: FileService) {}
 
     /**
-     * @url POST /files/upload
+     * POST /files/upload
      */
     @Post('upload')
     @UseInterceptors(FileInterceptor('file'))
@@ -54,7 +54,7 @@ export class FileController {
     @ApiOperation({ summary: 'List all files for the user' })
     @ApiResponse({ status: 200, description: 'List of files returned successfully.' })
     async getAllFiles(@User() u: DecodedIdToken) {
-        return this.fileService.getUserFiles(u.uid);
+        return await this.fileService.getUserFiles(u.uid);
     }
 
     /**

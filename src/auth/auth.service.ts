@@ -1,13 +1,12 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { FirebaseService } from 'src/firebase/firebase.service';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Auth } from 'firebase-admin/auth';
 import { CreateUserDto } from 'src/common/dtos';
 
 @Injectable()
 export class AuthService {
     private readonly logger = new Logger(AuthService.name);
-    private readonly auth = this.firebaseService.getAuth();
 
-    constructor(private readonly firebaseService: FirebaseService) {}
+    constructor(@Inject('FIREBASE_AUTH') private readonly auth: Auth) {}
 
     async create(dto: CreateUserDto) {
         try {
@@ -21,6 +20,7 @@ export class AuthService {
     }
 
     async checkToken(tok: string) {
+        this.logger.log(`Token received: ${tok}`);
         return await this.auth.verifyIdToken(tok);
     }
 

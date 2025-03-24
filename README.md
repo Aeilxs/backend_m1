@@ -1,21 +1,22 @@
 # Backend master project
 
-```bash
-# dev (avec hotreload)
-docker compose --profile dev up
+lancer en local
+
+```sh
+docker build -f Dockerfile.dev -t backend_m1:dev .
+docker run -p 3000:3000 backend_m1:dev
 ```
 
-## Check Auth
+logs
 
-```bash
-curl -X POST -H "Content-Type: application/json" -d '{
-    "email": "test@example.com",
-    "password": "password123",
-    "returnSecureToken": true
-}' "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=FIREBASE_API_KEY"
+```sh
+gcloud run services logs read contract-central-backend-gcp-pubsub --region europe-west1
+
+#####
+
+gcloud logging read "resource.type=cloud_run_revision AND resource.labels.service_name=contract-central-backend-gcp-pubsub" \
+  --limit=100 \
+  --project=contract-central-c710c \
+  --format="table(timestamp, severity, textPayload)" > errs.log
+
 ```
-
-## Doc
-
-[kafka ui](http://localhost:8080/ui)
-[swagger](http://localhost:3000/doc)

@@ -3,15 +3,17 @@ import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Public, User } from '@decorators';
 import { DecodedIdToken } from 'firebase-admin/lib/auth/token-verifier';
 import { AppService } from './app.service';
-import { KafkaService } from './kafka/kafka.service';
+// import { Service } from './kafka/kafka.service';
 import { MessagePattern, Payload } from '@nestjs/microservices';
+import { PubSubService } from './pub-sub/pub-sub.service';
 
 @Controller()
 export class AppController {
     private readonly loggerService = new Logger(AppController.name);
     constructor(
         private readonly appService: AppService,
-        private readonly kafkaService: KafkaService,
+        // private readonly kafkaService: KafkaService,
+        private readonly pubSubService: PubSubService,
     ) {}
 
     /**
@@ -86,6 +88,6 @@ export class AppController {
         const { user_uuid, response } = msg;
         this.loggerService.log(`Received coverage response for user ${user_uuid}`);
         this.loggerService.log(`Response: ${response}`);
-        this.kafkaService.setCoverageResponse(msg.request_id, msg);
+        // this.kafkaService.setCoverageResponse(msg.request_id, msg);
     }
 }

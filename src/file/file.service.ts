@@ -1,47 +1,44 @@
+import { Inject, Injectable, Logger, HttpException, HttpStatus, NotFoundException } from '@nestjs/common';
+import { Bucket, Storage } from '@google-cloud/storage';
+import { PubSubService } from 'src/pub-sub/pub-sub.service';
 import { ApiResponseDto } from '@dtos';
-import { HttpException, HttpStatus, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { FirebaseService } from 'src/firebase/firebase.service';
-import { KafkaService } from 'src/kafka/kafka.service';
 
 @Injectable()
 export class FileService {
-    private logger = new Logger(FileService.name);
-    private bucket = this.firebaseService.getBucket();
+    private readonly logger = new Logger(FileService.name);
 
     constructor(
-        private readonly firebaseService: FirebaseService,
-        private readonly kafkaService: KafkaService,
+        @Inject('FIREBASE_BUCKET') private readonly bucket: Bucket,
+        private readonly pubSubService: PubSubService,
     ) {}
 
-    async uploadFile(userId: string, file: Express.Multer.File): Promise<string> {
-        this.logger.log(`Uploading file for user ${userId}`);
-        if (file.mimetype !== 'application/pdf') {
-            throw new HttpException('Only PDF are accepted', HttpStatus.BAD_REQUEST);
-        }
+    async uploadFile(uid: string, file: Express.Multer.File): Promise<string> {
+        this.logger.log(`Uploading file for user ${uid}: ${file.originalname}`);
 
-        const fileUpload = this.bucket.file(`users/${userId}/${file.originalname}`);
+        const destination = `users/${uid}/${file.originalname}`;
+        const blob = this.bucket.file(destination);
 
-        const stream = fileUpload.createWriteStream({
-            metadata: {
+        try {
+            const stream = blob.createWriteStream({
+                resumable: false,
                 contentType: file.mimetype,
-            },
-        });
-
-        return new Promise((resolve, reject) => {
-            stream.on('error', (err) => reject(err));
-            stream.on('finish', async () => {
-                const fileUrl = `users/${userId}/${file.originalname}`;
-                await this.kafkaService.emitMessage('file-upload', { user_uuid: userId, file_url: fileUrl });
-                resolve(fileUrl);
             });
 
             stream.end(file.buffer);
-        });
+
+            this.logger.log(`Successfully uploaded ${file.originalname} to ${destination}`);
+            return destination;
+        } catch (error) {
+            this.logger.error(
+                `Failed to upload file ${file.originalname} for user ${uid}: ${error.message}`,
+                error.stack,
+            );
+            throw new Error('File upload failed');
+        }
     }
 
     async getFileUrl(uid: string, fileName: string): Promise<string> {
         this.logger.log(`Generating temporary URL for file ${fileName} for user ${uid}`);
-
         const file = this.bucket.file(`users/${uid}/${fileName}`);
 
         try {
@@ -49,23 +46,25 @@ export class FileService {
                 action: 'read',
                 expires: Date.now() + 10 * 60 * 1000, // 10min
             });
-
             return url;
         } catch (error) {
-            this.logger.error('Error generating signed URL', error);
+            this.logger.error('Error generating signed URL: ', error);
+            throw new HttpException('Could not generate URL', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     async getUserFiles(uid: string): Promise<string[]> {
-        this.logger.log(`Getting all files for user ${uid}`);
+        this.logger.log(`Fetching files for user: ${uid}`);
 
-        const options = {
-            prefix: `users/${uid}/`,
-        };
+        try {
+            const [files] = await this.bucket.getFiles({ prefix: `users/${uid}/` });
 
-        const [files] = await this.bucket.getFiles(options);
-        const fnames = files.map((f) => f.name);
-        return fnames;
+            this.logger.log(`Found ${files.length} files for user ${uid}`);
+            return files.map((f) => f.name);
+        } catch (error) {
+            this.logger.error(`Failed to fetch files for user ${uid}: ${error.message}`, error.stack);
+            throw new Error('Error retrieving user files');
+        }
     }
 
     async deleteFile(userId: string, fname: string) {
@@ -78,10 +77,11 @@ export class FileService {
 
         try {
             await file.delete();
-            await this.kafkaService.emitMessage('file-delete', {
+            await this.pubSubService.publishMessage('file-delete', {
                 user_uuid: userId,
                 file_url: `users/${userId}/${fname}`,
             });
+
             return new ApiResponseDto(HttpStatus.OK, `File ${fname} for user ${userId} deleted successfully`);
         } catch (error) {
             this.logger.error(`Error deleting file ${fname} for user ${userId}`, error);
@@ -92,14 +92,12 @@ export class FileService {
     async deleteAllUserFiles(uid: string) {
         this.logger.log(`Deleting all files for user ${uid}`);
 
-        const options = {
-            prefix: `users/${uid}/`,
-        };
-
         try {
-            const [files] = await this.bucket.getFiles(options);
+            const [files] = await this.bucket.getFiles({ prefix: `users/${uid}/` });
 
-            if (files.length === 0) return new ApiResponseDto(HttpStatus.OK, `No files found for user ${uid}`);
+            if (files.length === 0) {
+                return new ApiResponseDto(HttpStatus.OK, `No files found for user ${uid}`);
+            }
 
             await Promise.all(
                 files.map(async (file) => {
@@ -108,7 +106,11 @@ export class FileService {
                 }),
             );
 
-            await this.kafkaService.emitMessage('file-delete', { user_uuid: uid, file_url: '*' });
+            await this.pubSubService.publishMessage('file-delete', {
+                user_uuid: uid,
+                file_url: '*',
+            });
+
             return new ApiResponseDto(HttpStatus.OK, `All files for user ${uid} deleted successfully`);
         } catch (error) {
             this.logger.error(`Error deleting files for user ${uid}`, error);

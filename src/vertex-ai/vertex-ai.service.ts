@@ -10,12 +10,11 @@ export class VertexAIService {
 
     constructor() {
         const project = 'contract-central-c710c';
-        const location = 'us-central1';
+        const location = 'europe-west1';
         const textModel = 'gemini-1.5-pro';
 
         this.vertexAI = new VertexAI({ project, location });
 
-        // Configure generative text model
         this.generativeTextModel = this.vertexAI.getGenerativeModel({
             model: textModel,
         });

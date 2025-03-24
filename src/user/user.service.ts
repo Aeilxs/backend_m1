@@ -1,25 +1,29 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Firestore } from 'firebase-admin/firestore';
 import { AuthService } from 'src/auth/auth.service';
 import { UserInfoDto } from 'src/common/dtos/user.dtos';
-import { FirebaseService } from 'src/firebase/firebase.service';
 
 @Injectable()
 export class UserService {
-    private logger = new Logger(UserService.name);
-    private readonly firestore = this.firebaseService.getFirestore();
+    private readonly logger = new Logger(UserService.name);
+
     constructor(
-        private readonly firebaseService: FirebaseService,
+        @Inject('FIRESTORE') private readonly firestore: Firestore,
         private readonly authService: AuthService,
     ) {}
 
     async createUserInfo(uid: string, dto: UserInfoDto) {
         this.logger.log(`Creating user info for UID: ${uid}`);
+
         const authInfo = await this.authService.getUserByUid(uid);
-        const [firstname, lastname] = authInfo.displayName.split(' ');
+        const [firstname, lastname] = authInfo.displayName?.split(' ') ?? ['', ''];
+
         dto.firstname = firstname;
         dto.lastname = lastname;
         dto.email = authInfo.email;
+
         this.logger.log(`Found firstname: '${firstname}' lastname: '${lastname}'`);
+
         const userRef = this.firestore.collection('users').doc(uid);
         try {
             await userRef.set({
@@ -38,6 +42,7 @@ export class UserService {
     async updateUserInfo(uid: string, dto: UserInfoDto) {
         this.logger.log(`Updating user info for UID: ${uid}`);
         const userRef = this.firestore.collection('users').doc(uid);
+
         try {
             await userRef.set(
                 {
@@ -57,6 +62,7 @@ export class UserService {
 
     async getUserInfo(uid: string) {
         const userRef = this.firestore.collection('users').doc(uid);
-        return (await userRef.get()).data();
+        const doc = await userRef.get();
+        return doc.exists ? doc.data() : null;
     }
 }
