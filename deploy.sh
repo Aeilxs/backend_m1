@@ -3,7 +3,7 @@
 PROJECT_ID="contract-central-c710c"
 REGION="europe-west1"
 SERVICE_NAME="contract-central-backend-gcp-pubsub"
-SERVICE_ACCOUNT="nest-vertex-ai@contract-central-c710c.iam.gserviceaccount.com"
+SERVICE_ACCOUNT="nest-backend@contract-central-c710c.iam.gserviceaccount.com"
 IMAGE_NAME="gcr.io/$PROJECT_ID/backend-gcp-pubsub"
 MEMORY="1Gi"
 

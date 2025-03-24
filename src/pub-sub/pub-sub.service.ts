@@ -15,10 +15,18 @@ export class PubSubService implements OnModuleInit {
         this.logger.log('PubSubService initialized');
     }
 
-    async publishMessage(topic: string, message: any) {
-        const buf = Buffer.from(JSON.stringify(message));
-        await this.pubSubClient.topic(topic).publishMessage({ data: buf });
-        this.logger.log(`Message publié sur ${topic}`);
+    async publishMessage(topicName: string, data: object): Promise<string> {
+        this.logger.log(`Publishing message to topic "${topicName}"`);
+
+        try {
+            const dataBuffer = Buffer.from(JSON.stringify(data));
+            const messageId = await this.pubSubClient.topic(topicName).publish(dataBuffer);
+            this.logger.log(`Message published to ${topicName} with ID: ${messageId}`);
+            return messageId;
+        } catch (error) {
+            this.logger.error(`Error publishing message to ${topicName}: ${error.message}`, error.stack);
+            throw new Error('Pub/Sub message publish failed');
+        }
     }
 
     async subscribeMessages() {
