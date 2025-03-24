@@ -1,19 +1,28 @@
-import { Module, DynamicModule } from '@nestjs/common';
-import { FirebaseService } from './firebase.service';
+import { Module, DynamicModule, Global } from '@nestjs/common';
 import * as admin from 'firebase-admin';
+import { Firestore } from 'firebase-admin/firestore';
+import { Auth } from 'firebase-admin/auth';
 
+@Global()
 @Module({})
 export class FirebaseModule {
-    static forRoot(): DynamicModule {
-        admin.initializeApp({
-            credential: admin.credential.applicationDefault(),
-            storageBucket: 'contract-central-c710c.firebasestorage.app',
-        });
+  static forRoot(): DynamicModule {
+    const app = admin.initializeApp({
+      credential: admin.credential.applicationDefault(),
+      projectId: 'contract-central-c710c',
+      storageBucket: 'contract-central-c710c.appspot.com',
+    });
 
-        return {
-            module: FirebaseModule,
-            providers: [FirebaseService],
-            exports: [FirebaseService],
-        };
-    }
+    console.log('[Firebase] Initialized with project:', app.options.projectId);
+
+    return {
+      module: FirebaseModule,
+      providers: [
+        { provide: 'FIREBASE_APP', useValue: app },
+        { provide: 'FIRESTORE', useValue: admin.firestore() as Firestore },
+        { provide: 'FIREBASE_AUTH', useValue: admin.auth() as Auth },
+      ],
+      exports: ['FIREBASE_APP', 'FIRESTORE', 'FIREBASE_AUTH'],
+    };
+  }
 }

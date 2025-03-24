@@ -3,6 +3,7 @@
 PROJECT_ID="contract-central-c710c"
 REGION="europe-west1"
 SERVICE_NAME="contract-central-backend-gcp-pubsub"
+SERVICE_ACCOUNT="nest-vertex-ai@contract-central-c710c.iam.gserviceaccount.com"
 IMAGE_NAME="gcr.io/$PROJECT_ID/backend-gcp-pubsub"
 MEMORY="1Gi"
 
@@ -15,7 +16,7 @@ usage() {
 
 build_and_deploy() {
     if [ ! -f Dockerfile ]; then
-        echo "❌ Erreur : Aucun Dockerfile trouvé."
+        echo "Erreur : Aucun Dockerfile trouvé."
         exit 1
     fi
 
@@ -26,6 +27,7 @@ build_and_deploy() {
         --platform managed \
         --region "$REGION" \
         --allow-unauthenticated \
+        --service-account="$SERVICE_ACCOUNT" \
         --memory="$MEMORY"
 }
 

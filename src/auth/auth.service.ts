@@ -21,6 +21,7 @@ export class AuthService {
     }
 
     async checkToken(tok: string) {
+        this.logger.log(`Token received: ${tok}`);
         return await this.auth.verifyIdToken(tok);
     }
 
