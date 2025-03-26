@@ -36,6 +36,7 @@ export class AppService {
         }
 
         return this.vertexService.generateTextContent(
+            uid,
             prompt,
             files,
             (await this.userService.getUserInfo(uid)) as UserInfoDto,

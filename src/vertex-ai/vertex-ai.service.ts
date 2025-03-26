@@ -1,5 +1,6 @@
 import { VertexAI } from '@google-cloud/vertexai';
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Firestore } from 'firebase-admin/firestore';
 import { UserInfoDto } from 'src/common/dtos/user.dtos';
 
 @Injectable()
@@ -8,29 +9,19 @@ export class VertexAIService {
     private readonly generativeTextModel: any;
     private readonly logger = new Logger(VertexAIService.name);
 
-    constructor() {
+    constructor(@Inject('FIRESTORE') private readonly firestore: Firestore) {
         const project = 'contract-central-c710c';
         const location = 'europe-west1';
         const textModel = 'gemini-1.5-pro';
-
         this.vertexAI = new VertexAI({ project, location });
-
         this.generativeTextModel = this.vertexAI.getGenerativeModel({
             model: textModel,
         });
     }
 
-    async generateTextContent(prompt: string, bucketUrls: string[], userInfo: UserInfoDto): Promise<any> {
-        let displayName = `${userInfo.firstname} ${userInfo.lastname}`;
-
-        if (
-            userInfo.firstname === undefined ||
-            userInfo.lastname === undefined ||
-            userInfo.firstname === '' ||
-            userInfo.lastname === ''
-        ) {
-            displayName = "l'utilisateur";
-        }
+    async generateTextContent(uid: string, prompt: string, bucketUrls: string[], userInfo: UserInfoDto): Promise<any> {
+        const displayName =
+            userInfo.firstname && userInfo.lastname ? `${userInfo.firstname} ${userInfo.lastname}` : "l'utilisateur";
 
         const reasoningPrompt = getReasoningPrompt(displayName);
         const finalDecisionPrompt = getFinalDecisionPrompt(displayName);
@@ -42,37 +33,93 @@ export class VertexAIService {
             },
         }));
 
-        const textPart = { text: `INFO ${displayName}: ${JSON.stringify(userInfo)} REQUETE ${displayName}: ${prompt}` };
-
-        // 1ere passe : Raisonnement structuré
-        const reasoningRequest = {
-            contents: [
-                {
-                    role: 'user',
-                    parts: [{ text: reasoningPrompt }, textPart, ...fileParts],
-                },
-            ],
+        const textPart = {
+            text: `INFO ${displayName}: ${JSON.stringify(userInfo)} REQUEST ${displayName}: ${prompt}`,
         };
 
-        const reasoningResult = await this.generativeTextModel.generateContent(reasoningRequest);
-        const reasoningText =
-            reasoningResult?.response?.candidates?.[0]?.content?.parts?.[0]?.text ||
-            'Erreur : aucun raisonnement trouvé.';
+        let reasoningText = 'No reasoning generated.';
+        let docRef: FirebaseFirestore.DocumentReference;
 
-        this.logger.log('Raisonnement structuré :', reasoningText); // Debugging
+        try {
+            this.logger.log(`Generating structured reasoning for user: ${uid}`);
 
-        // 2eme passe : Décision finale
-        const decisionRequest = {
-            contents: [
-                {
-                    role: 'user',
-                    parts: [{ text: finalDecisionPrompt }, { text: `### Raisonnement structuré:\n${reasoningText}` }],
-                },
-            ],
-        };
+            const reasoningRequest = {
+                contents: [
+                    {
+                        role: 'user',
+                        parts: [{ text: reasoningPrompt }, textPart, ...fileParts],
+                    },
+                ],
+            };
 
-        const result = await this.generativeTextModel.generateContent(decisionRequest);
-        return result;
+            const reasoningResult = await this.generativeTextModel.generateContent(reasoningRequest);
+
+            reasoningText =
+                reasoningResult?.response?.candidates?.[0]?.content?.parts?.[0]?.text || 'No reasoning available.';
+
+            this.logger.log(`Structured reasoning successfully generated for ${uid}`);
+
+            docRef = await this.firestore
+                .collection('logs')
+                .doc(uid)
+                .collection('ai_interactions')
+                .add({
+                    prompt,
+                    reasoning: reasoningText,
+                    finalDecision: null,
+                    vertexResponse: {
+                        responseId: reasoningResult?.response?.responseId || null,
+                        promptTokens: reasoningResult?.response?.usageMetadata?.promptTokenCount || null,
+                        totalTokens: reasoningResult?.response?.usageMetadata?.totalTokenCount || null,
+                        modelVersion: reasoningResult?.response?.modelVersion || null,
+                    },
+                    createdAt: new Date().toISOString(),
+                    deletedAt: null,
+                });
+
+            this.logger.log(`Saved reasoning to Firestore for user ${uid}`);
+        } catch (error) {
+            this.logger.error(`Error during reasoning generation for ${uid}: ${error.message}`, error.stack);
+            throw error;
+        }
+
+        try {
+            this.logger.log(`Generating final decision for ${uid}`);
+
+            const decisionRequest = {
+                contents: [
+                    {
+                        role: 'user',
+                        parts: [{ text: finalDecisionPrompt }, { text: `### Structured reasoning:\n${reasoningText}` }],
+                    },
+                ],
+            };
+
+            const result = await this.generativeTextModel.generateContent(decisionRequest);
+
+            const finalText = result?.response?.candidates?.[0]?.content?.parts?.[0]?.text || 'No decision available.';
+
+            this.logger.log(`Final decision successfully generated for ${uid}`);
+
+            if (docRef) {
+                await docRef.update({
+                    finalDecision: finalText,
+                    finalVertexResponse: {
+                        responseId: result?.response?.responseId || null,
+                        promptTokens: result?.response?.usageMetadata?.promptTokenCount || null,
+                        totalTokens: result?.response?.usageMetadata?.totalTokenCount || null,
+                        modelVersion: result?.response?.modelVersion || null,
+                    },
+                });
+
+                this.logger.log(`Updated Firestore log with final decision for user ${uid}`);
+            }
+
+            return result;
+        } catch (error) {
+            this.logger.error(`Error during final decision generation for ${uid}: ${error.message}`, error.stack);
+            throw error;
+        }
     }
 }
 

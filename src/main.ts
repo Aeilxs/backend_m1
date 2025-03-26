@@ -5,11 +5,17 @@ import { FirebaseInterceptor } from './common/interceptors/firebase.interceptor'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { FirebaseAuthGuard } from './common/guards/firebase-auth.guard';
 import { AuthService } from './auth/auth.service';
+import { Logger } from 'nestjs-pino';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 
 async function bootstrap() {
-    const app = await NestFactory.create(AppModule);
+    const app = await NestFactory.create(AppModule, {
+        bufferLogs: true,
+    });
 
+    app.useLogger(app.get(Logger));
     app.useGlobalInterceptors(new FirebaseInterceptor());
+    app.useGlobalInterceptors(new LoggingInterceptor());
     app.useGlobalPipes(
         new ValidationPipe({
             whitelist: true,
