@@ -27,6 +27,12 @@ export class FileService {
             stream.end(file.buffer);
 
             this.logger.log(`Successfully uploaded ${file.originalname} to ${destination}`);
+
+            await this.pubSubService.publishMessage('file-upload', {
+                user_uuid: uid,
+                file_url: destination,
+            });
+
             return destination;
         } catch (error) {
             this.logger.error(

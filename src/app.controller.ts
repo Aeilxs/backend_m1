@@ -80,14 +80,11 @@ export class AppController {
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not found.' })
     @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized.' })
     async handleCoverageResponse(@User() u: DecodedIdToken, @Query('request_id') requestId: string) {
-        return this.appService.handleCoverageResponse(u.uid, requestId);
-    }
-
-    @MessagePattern('coverage-response')
-    handleMsg(@Payload() msg: any) {
-        const { user_uuid, response } = msg;
-        this.loggerService.log(`Received coverage response for user ${user_uuid}`);
-        this.loggerService.log(`Response: ${response}`);
-        // this.kafkaService.setCoverageResponse(msg.request_id, msg);
+        try {
+            return this.appService.handleCoverageResponse(u.uid, requestId);
+        } catch (err) {
+            this.loggerService.error(err.message, err.stack);
+            throw err;
+        }
     }
 }

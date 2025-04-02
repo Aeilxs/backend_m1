@@ -7,7 +7,7 @@ export class PubSubTestController {
 
     @Get('send')
     async sendMessage() {
-        await this.pubSubService.publishMessage('coverage-request', { message: 'Test Pub/Sub' });
+        await this.pubSubService.publishMessage('coverage-query', { message: 'Test Pub/Sub' });
         return { success: true };
     }
 }

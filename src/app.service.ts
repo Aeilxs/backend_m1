@@ -1,21 +1,21 @@
-import { HttpException, Injectable, Logger } from '@nestjs/common';
+import { HttpException, Inject, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { FileService } from './file/file.service';
 import { UserService } from './user/user.service';
 import { VertexAIService } from './vertex-ai/vertex-ai.service';
-// import { KafkaService } from './kafka/kafka.service';
 import { randomUUID } from 'crypto';
 import { UserInfoDto } from './common/dtos/user.dtos';
 import { PubSubService } from './pub-sub/pub-sub.service';
+import { Firestore } from 'firebase-admin/firestore';
 
 @Injectable()
 export class AppService {
     private readonly loggerService = new Logger(AppService.name);
     constructor(
+        @Inject('FIRESTORE') private readonly firestore: Firestore,
         private readonly fileService: FileService,
         private readonly userService: UserService,
         private readonly vertexService: VertexAIService,
         private readonly pubSubService: PubSubService,
-        // private readonly kafkaService: KafkaService,
     ) {}
 
     async getAllUserInformations(uid: string) {
@@ -43,28 +43,45 @@ export class AppService {
         );
     }
 
-    async askCoverageQuery(uid: string, prompt: string) {
-        this.loggerService.log(`Asking coverage query for user: ${uid}`);
+    async askCoverageQuery(uid: string, prompt: string): Promise<string> {
         const request_id = randomUUID();
-        this.pubSubService.publishMessage('coverage-query', { user_uuid: uid, user_query: prompt, request_id });
+        await this.firestore.collection('coverage_requests').doc(request_id).set({
+            user_uuid: uid,
+            user_query: prompt,
+            status: 'pending',
+            created_at: Date.now(),
+        });
+
+        await this.pubSubService.publishMessage('coverage-query', {
+            user_uuid: uid,
+            user_query: prompt,
+            request_id,
+        });
+
         return request_id;
     }
 
-    // TODO
-    async handleCoverageResponse(uid: string, requestId: string) {
-        this.loggerService.log(`Handling coverage response for request: ${requestId}`);
-        // const r = this.kafkaService.getCoverageResponse(requestId);
-        // if (r === undefined) {
-        //     throw new HttpException(`No response for request id ${requestId}`, 404);
-        // }
+    async handleCoverageResponse(uid: string, request_id: string) {
+        const ref = this.firestore.collection('coverage_requests').doc(request_id);
+        const doc = await ref.get();
 
-        // if (r.user_uuid !== uid) {
-        //     throw new HttpException(
-        //         "Unauthorized (user trying to retrieve a response that doesn't belong to him)",
-        //         401,
-        //     );
-        // }
+        if (!doc.exists) {
+            throw new NotFoundException(`No response found for request_id ${request_id}`);
+        }
 
-        // return r;
+        const data = doc.data();
+
+        if (data.user_uuid !== uid) {
+            throw new UnauthorizedException('You are not allowed to access this response.');
+        }
+
+        if (data.status !== 'done') {
+            return { status: 'pending' };
+        }
+
+        return {
+            status: 'done',
+            response: data.response,
+        };
     }
 }
