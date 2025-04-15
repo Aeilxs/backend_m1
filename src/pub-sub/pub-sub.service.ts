@@ -18,7 +18,7 @@ export class PubSubService implements OnModuleInit {
 
     async onModuleInit() {
         this.logger.log('Initializing PubSubService...');
-        this.subscribeToCoverageResponse();
+        if (process.env.NODE_ENV !== 'test') this.subscribeToCoverageResponse();
     }
 
     async publishMessage(topicName: string, data: object): Promise<string> {
