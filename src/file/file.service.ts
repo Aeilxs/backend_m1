@@ -7,10 +7,9 @@ import {
     NotFoundException,
     BadRequestException,
 } from '@nestjs/common';
-import { Bucket, Storage } from '@google-cloud/storage';
+import { Bucket } from '@google-cloud/storage';
 import { PubSubService } from 'src/pub-sub/pub-sub.service';
 import { ApiResponseDto, FileUploadDto } from '@dtos';
-import e from 'express';
 import { FileCategory } from 'src/common/dtos/file-upload.dto';
 
 @Injectable()
