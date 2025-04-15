@@ -21,3 +21,17 @@ gcloud run services logs read contract-central-backend-gcp-pubsub --region europ
   --format=json > errs.log
 
 ```
+
+-   Catégories:
+
+    -   Auto
+    -   Habitation
+    -   Santé
+    -   Autre (cb etc)
+
+-   Photos (sur mon usecase)
+
+-   Dashboard
+    -   Nombre de contrats
+    -   Contrats en doublon
+    -   Dernières réponses

@@ -10,10 +10,12 @@
         "sourceMap": true,
         "outDir": "./dist",
         "baseUrl": "./",
+        "resolveJsonModule": true,
         "paths": {
             "@decorators":["src/common/decorators"],
             "@guards":["src/common/guards"],
             "@dtos":["src/common/dtos"],
+            "src/*": ["src/*"]
         },
         "incremental": true,
         "skipLibCheck": true,

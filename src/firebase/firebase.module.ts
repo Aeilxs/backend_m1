@@ -11,9 +11,6 @@ export class FirebaseModule {
             storageBucket: 'contract-central-c710c.firebasestorage.app',
         });
 
-        console.log('[Firebase] Initialized with project:', app.options.projectId);
-        console.log('[Firebase] Default bucket:', app.options.storageBucket);
-
         return {
             module: FirebaseModule,
             providers: [

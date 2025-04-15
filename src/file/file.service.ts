@@ -1,7 +1,17 @@
-import { Inject, Injectable, Logger, HttpException, HttpStatus, NotFoundException } from '@nestjs/common';
+import {
+    Inject,
+    Injectable,
+    Logger,
+    HttpException,
+    HttpStatus,
+    NotFoundException,
+    BadRequestException,
+} from '@nestjs/common';
 import { Bucket, Storage } from '@google-cloud/storage';
 import { PubSubService } from 'src/pub-sub/pub-sub.service';
-import { ApiResponseDto } from '@dtos';
+import { ApiResponseDto, FileUploadDto } from '@dtos';
+import e from 'express';
+import { FileCategory } from 'src/common/dtos/file-upload.dto';
 
 @Injectable()
 export class FileService {
@@ -12,10 +22,15 @@ export class FileService {
         private readonly pubSubService: PubSubService,
     ) {}
 
-    async uploadFile(uid: string, file: Express.Multer.File): Promise<string> {
-        this.logger.log(`Uploading file for user ${uid}: ${file.originalname}`);
+    async uploadFile(uid: string, file: Express.Multer.File, dto: FileUploadDto): Promise<string> {
+        this.logger.log(`Uploading file for user ${uid}: ${dto.category}/${file.originalname}`);
 
-        const destination = `users/${uid}/${file.originalname}`;
+        if (!dto.category) throw new BadRequestException('File category is required');
+
+        if (!Object.values(FileCategory).includes(dto.category))
+            throw new BadRequestException(`Invalid file category: ${dto.category}`);
+
+        const destination = `users/${uid}/${dto.category}/${file.originalname}`;
         const blob = this.bucket.file(destination);
 
         try {
