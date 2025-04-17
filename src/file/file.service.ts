@@ -128,7 +128,7 @@ export class FileService {
 
             await this.pubSubService.publishMessage('file-delete', {
                 user_uuid: uid,
-                file_url: '*',
+                file_url: 'users/${uid}/*',
             });
 
             return new ApiResponseDto(HttpStatus.OK, `All files for user ${uid} deleted successfully`);
