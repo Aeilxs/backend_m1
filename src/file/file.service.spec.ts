@@ -1,9 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { FileService } from './file.service';
 import { Bucket, File } from '@google-cloud/storage';
-import { PubSubService } from 'src/pub-sub/pub-sub.service';
 import { HttpStatus, NotFoundException } from '@nestjs/common';
 import { ApiResponseDto } from '@dtos';
+import { PubSubService } from 'src/pub-sub/pub-sub.service';
+import { FileCategory } from 'src/common/dtos/file-upload.dto';
 
 describe('FileService', () => {
     let service: FileService;
@@ -56,12 +57,13 @@ describe('FileService', () => {
             buffer: Buffer.from('123'),
         } as Express.Multer.File;
 
-        await service.uploadFile('user1', file);
+        const dto = { category: FileCategory.OTHER };
+        await service.uploadFile('user1', file, dto);
 
-        expect(mockBucket.file).toHaveBeenCalledWith('users/user1/image.png');
+        expect(mockBucket.file).toHaveBeenCalledWith('users/user1/OTHER/image.png');
         expect(mockPubSubService.publishMessage).toHaveBeenCalledWith('file-upload', {
             user_uuid: 'user1',
-            file_url: 'users/user1/image.png',
+            file_url: 'users/user1/OTHER/image.png',
         });
     });
 
@@ -77,7 +79,7 @@ describe('FileService', () => {
     });
 
     it('should delete a file if it exists', async () => {
-        const result = await service.deleteFile('user1', 'file1.txt');
+        const result = await service.deleteFile('user1', 'file1.txt', 'category1');
         expect(result).toEqual(new ApiResponseDto(HttpStatus.OK, `File file1.txt for user user1 deleted successfully`));
         expect(mockPubSubService.publishMessage).toHaveBeenCalled();
     });
@@ -85,7 +87,7 @@ describe('FileService', () => {
     it('should throw if file does not exist', async () => {
         (mockFile.exists as jest.Mock).mockResolvedValue([false]);
 
-        await expect(service.deleteFile('user1', 'missing.txt')).rejects.toThrow(NotFoundException);
+        await expect(service.deleteFile('user1', 'missing.txt', 'category1')).rejects.toThrow(NotFoundException);
     });
 
     it('should delete all user files', async () => {
@@ -93,7 +95,7 @@ describe('FileService', () => {
         expect(result).toEqual(new ApiResponseDto(HttpStatus.OK, `All files for user user1 deleted successfully`));
         expect(mockPubSubService.publishMessage).toHaveBeenCalledWith('file-delete', {
             user_uuid: 'user1',
-            file_url: '*',
+            file_url: 'users/user1/*',
         });
     });
 });
