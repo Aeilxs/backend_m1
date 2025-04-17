@@ -52,13 +52,13 @@ export class FileController {
     /**
      * DELETE /files/:fileName
      */
-    @Delete(':fileName')
+    @Delete(':category/:fileName')
     @ApiOperation({ summary: 'Delete a specific file for the user' })
     @ApiResponse({ status: 200, description: 'File deleted successfully.' })
     @ApiResponse({ status: 404, description: 'File not found.' })
     @ApiResponse({ status: 401, description: 'Unauthorized.' })
-    async deleteFile(@Param('fileName') fname: string, @User() u: DecodedIdToken) {
-        return await this.fileService.deleteFile(u.uid, fname);
+    async deleteFile(@Param('fileName') fname: string, @User() u: DecodedIdToken, @Param('category') category: string) {
+        return await this.fileService.deleteFile(u.uid, fname, category);
     }
 
     /**

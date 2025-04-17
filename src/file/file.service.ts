@@ -87,10 +87,10 @@ export class FileService {
         }
     }
 
-    async deleteFile(userId: string, fname: string) {
+    async deleteFile(userId: string, fname: string, category: string) {
         this.logger.log(`Deleting file ${fname} for user ${userId}`);
 
-        const file = this.bucket.file(`users/${userId}/${fname}`);
+        const file = this.bucket.file(`users/${userId}/${category}/${fname}`);
         const [exists] = await file.exists();
 
         if (!exists) throw new NotFoundException(`File ${fname} for user ${userId} not found`);
@@ -99,7 +99,7 @@ export class FileService {
             await file.delete();
             await this.pubSubService.publishMessage('file-delete', {
                 user_uuid: userId,
-                file_url: `users/${userId}/${fname}`,
+                file_url: `users/${userId}/${category}/${fname}`,
             });
 
             return new ApiResponseDto(HttpStatus.OK, `File ${fname} for user ${userId} deleted successfully`);
