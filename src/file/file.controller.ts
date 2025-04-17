@@ -4,7 +4,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express';
 import { User } from '@decorators';
 import { DecodedIdToken } from 'firebase-admin/lib/auth/token-verifier';
-import { ApiTags, ApiOperation, ApiResponse, ApiConsumes, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiConsumes } from '@nestjs/swagger';
 import { FileCategory } from 'src/common/dtos/file-upload.dto';
 
 @ApiTags('files')

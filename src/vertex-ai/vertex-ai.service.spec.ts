@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { VertexAIService } from './vertex-ai.service';
-import { Firestore } from 'firebase-admin/firestore';
 import { UserInfoDto } from 'src/common/dtos/user.dtos';
 
 jest.mock('@google-cloud/vertexai', () => {

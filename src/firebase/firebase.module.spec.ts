@@ -1,5 +1,4 @@
 import { FirebaseModule } from './firebase.module';
-import * as admin from 'firebase-admin';
 
 jest.mock('firebase-admin', () => {
     const firestore = jest.fn();

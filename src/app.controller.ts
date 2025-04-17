@@ -3,8 +3,6 @@ import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Public, User } from '@decorators';
 import { DecodedIdToken } from 'firebase-admin/lib/auth/token-verifier';
 import { AppService } from './app.service';
-// import { Service } from './kafka/kafka.service';
-import { MessagePattern, Payload } from '@nestjs/microservices';
 import { PubSubService } from './pub-sub/pub-sub.service';
 
 @Controller()

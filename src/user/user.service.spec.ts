@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from './user.service';
 import { AuthService } from 'src/auth/auth.service';
-import { Firestore } from 'firebase-admin/firestore';
 import { UserInfoDto } from 'src/common/dtos/user.dtos';
 import { UserRecord } from 'firebase-admin/auth';
 

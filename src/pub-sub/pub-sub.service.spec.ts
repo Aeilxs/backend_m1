@@ -6,7 +6,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PubSubService } from './pub-sub.service';
 import { Firestore } from 'firebase-admin/firestore';
-import { PubSub } from '@google-cloud/pubsub';
 
 jest.mock('@google-cloud/pubsub', () => {
     const publish = jest.fn().mockResolvedValue('message-id-123');
