@@ -2,7 +2,7 @@ import { IsEnum, IsNotEmpty } from 'class-validator';
 
 export enum FileCategory {
     AUTO = 'AUTO',
-    HABITATION = 'HABITATION',
+    HOME = 'HOME',
     HEALTH = 'HEALTH',
     OTHER = 'OTHER',
 }
