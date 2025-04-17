@@ -9,6 +9,7 @@ import { AppService } from './app.service';
 import { VertexAIModule } from './vertex-ai/vertex-ai.module';
 import { PubSubModule } from './pub-sub/pub-sub.module';
 import { LoggerModule } from 'nestjs-pino';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
     imports: [
@@ -31,6 +32,7 @@ import { LoggerModule } from 'nestjs-pino';
         UserModule,
         VertexAIModule,
         PubSubModule,
+        DashboardModule,
     ],
     controllers: [AppController],
     providers: [AppService],

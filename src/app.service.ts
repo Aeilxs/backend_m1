@@ -6,6 +6,7 @@ import { randomUUID } from 'crypto';
 import { UserInfoDto } from './common/dtos/user.dtos';
 import { PubSubService } from './pub-sub/pub-sub.service';
 import { Firestore } from 'firebase-admin/firestore';
+import { DashboardService } from './dashboard/dashboard.service';
 
 @Injectable()
 export class AppService {
@@ -16,15 +17,18 @@ export class AppService {
         private readonly userService: UserService,
         private readonly vertexService: VertexAIService,
         private readonly pubSubService: PubSubService,
+        private readonly dashboardService: DashboardService,
     ) {}
 
     async getAllUserInformations(uid: string) {
         this.loggerService.log(`Retrieving all user informations for user: ${uid}`);
         const profile = await this.userService.getUserInfo(uid);
         const files = await this.fileService.getUserFiles(uid);
+        const dashboard = await this.dashboardService.buildDashboard(uid);
         return {
             profile: profile,
             files: files,
+            dashboard: dashboard,
         };
     }
 
