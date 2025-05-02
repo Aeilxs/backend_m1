@@ -34,17 +34,17 @@ export class AppService {
 
     async askGenerativeModel(uid: string, prompt: string) {
         this.loggerService.log(`Asking generative model for user: ${uid}`);
+
         const files = await this.fileService.getUserFiles(uid);
+
         if (files.length === 0) {
             throw new HttpException('Add files before requesting AI.', 404);
         }
 
-        return this.vertexService.generateTextContent(
-            uid,
-            prompt,
-            files,
-            (await this.userService.getUserInfo(uid)) as UserInfoDto,
-        );
+        const userInfo = (await this.userService.getUserInfo(uid)) as UserInfoDto;
+
+        const result = await this.vertexService.generateTextContent(uid, prompt, files, userInfo);
+        return result;
     }
 
     async askCoverageQuery(uid: string, prompt: string): Promise<string> {

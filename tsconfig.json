@@ -11,6 +11,7 @@
         "outDir": "./dist",
         "baseUrl": "./",
         "resolveJsonModule": true,
+        "rootDir": "src",
         "paths": {
             "@decorators":["src/common/decorators"],
             "@guards":["src/common/guards"],

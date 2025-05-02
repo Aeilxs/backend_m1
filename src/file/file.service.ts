@@ -137,4 +137,47 @@ export class FileService {
             throw new HttpException('Failed to delete user files', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    async uploadTmpImage(uid: string, file: Express.Multer.File, dto: FileUploadDto): Promise<string> {
+        this.logger.log(`Uploading temporary image for user ${uid}: ${dto.category}/${file.originalname}`);
+        const destination = `users/${uid}/${dto.category}/${Date.now()}_${file.originalname}`;
+        const blob = this.bucket.file(destination);
+
+        try {
+            const stream = blob.createWriteStream({
+                resumable: false,
+                contentType: file.mimetype,
+            });
+
+            stream.end(file.buffer);
+
+            this.logger.log(`Successfully uploaded ${file.originalname} to ${destination}`);
+
+            return destination;
+        } catch (error) {
+            this.logger.error(
+                `Failed to upload file ${file.originalname} for user ${uid}: ${error.message}`,
+                error.stack,
+            );
+            throw new Error('File upload failed');
+        }
+    }
+
+    async deleteTempFile(fpath: string) {
+        this.logger.log(`Deleting temporary file: ${fpath}`);
+        const file = this.bucket.file(fpath);
+        const [exists] = await file.exists();
+
+        if (!exists) {
+            this.logger.warn(`Temp file ${fpath} not found`);
+            return 'No file to delete';
+        }
+
+        try {
+            await file.delete();
+            this.logger.log(`Temp file deleted: ${fpath}`);
+        } catch (error) {
+            this.logger.error(`Failed to delete temp file ${fpath}`, error.stack);
+        }
+    }
 }

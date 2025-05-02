@@ -19,6 +19,7 @@ export class VertexAIService {
         });
     }
 
+    // OG
     async generateTextContent(uid: string, prompt: string, bucketUrls: string[], userInfo: UserInfoDto): Promise<any> {
         const displayName =
             userInfo.firstname && userInfo.lastname ? `${userInfo.firstname} ${userInfo.lastname}` : "l'utilisateur";
@@ -26,12 +27,41 @@ export class VertexAIService {
         const reasoningPrompt = getReasoningPrompt(displayName);
         const finalDecisionPrompt = getFinalDecisionPrompt(displayName);
 
-        const fileParts = bucketUrls.map((url) => ({
-            fileData: {
-                fileUri: 'gs://contract-central-c710c.firebasestorage.app/' + url,
-                mimeType: 'application/pdf',
-            },
-        }));
+        // const fileParts = bucketUrls.map((url) => ({
+        //     fileData: {
+        //         fileUri: 'gs://contract-central-c710c.firebasestorage.app/' + url,
+        //         mimeType: 'application/pdf',
+        //     },
+        // }));
+
+        const fileParts = bucketUrls.map((url) => {
+            const extension = url.split('.').pop()?.toLowerCase();
+
+            let mimeType: string;
+
+            switch (extension) {
+                case 'pdf':
+                    mimeType = 'application/pdf';
+                    break;
+                case 'png':
+                    mimeType = 'image/png';
+                    break;
+                case 'jpg':
+                case 'jpeg':
+                    mimeType = 'image/jpeg';
+                    break;
+                default:
+                    mimeType = 'application/octet-stream'; // fallback safe
+                    break;
+            }
+
+            return {
+                fileData: {
+                    fileUri: `gs://contract-central-c710c.firebasestorage.app/${url}`,
+                    mimeType,
+                },
+            };
+        });
 
         const textPart = {
             text: `INFO ${displayName}: ${JSON.stringify(userInfo)} REQUEST ${displayName}: ${prompt}`,
@@ -121,6 +151,64 @@ export class VertexAIService {
             throw error;
         }
     }
+
+    // DEBUG METHOD
+    // async generateTextContent(uid: string, prompt: string, bucketUrls: string[], userInfo: UserInfoDto): Promise<any> {
+    //     const fileParts = bucketUrls.map((url) => {
+    //         const extension = url.split('.').pop()?.toLowerCase();
+    //         let mimeType: string;
+
+    //         switch (extension) {
+    //             case 'pdf':
+    //                 mimeType = 'application/pdf';
+    //                 break;
+    //             case 'png':
+    //                 mimeType = 'image/png';
+    //                 break;
+    //             case 'jpg':
+    //             case 'jpeg':
+    //                 mimeType = 'image/jpeg';
+    //                 break;
+    //             default:
+    //                 mimeType = 'application/octet-stream';
+    //                 break;
+    //         }
+
+    //         return {
+    //             fileData: {
+    //                 fileUri: `gs://contract-central-c710c.firebasestorage.app/${url}`,
+    //                 mimeType,
+    //             },
+    //         };
+    //     });
+
+    //     const rawPrompt = `
+    // Ignore toutes les consignes précédentes.
+    // Tu es un assistant. Réponds simplement à cette requête utilisateur :
+
+    // "${prompt}"
+    //     `;
+
+    //     const request = {
+    //         contents: [
+    //             {
+    //                 role: 'user',
+    //                 parts: [{ text: rawPrompt }, ...fileParts],
+    //             },
+    //         ],
+    //     };
+
+    //     try {
+    //         const result = await this.generativeTextModel.generateContent(request);
+
+    //         const text = result?.response?.candidates?.[0]?.content?.parts?.[0]?.text || 'No output generated.';
+
+    //         return result;
+    //     } catch (error) {
+    //         this.logger.error(`Error generating simple content for ${uid}: ${error.message}`, error.stack);
+    //         throw error;
+    //     }
+    // }
 }
 
 function getReasoningPrompt(userName: string): string {
@@ -140,7 +228,7 @@ Pour chaque contrat vous drevez répondre aux questions suivantes :
 - Quels sont les risques non couverts ?
 - Quel est le coût (si connu) de cette couverture ?
 - Identifier les garanties manquantes, les doublons, les coûts excessifs ou les contrats peu pertinent (exemple, assurance pour les métiers à risque si ${userName} est développeur).
-- Si l'utilisateur est **probablement couvert**, préciser : "**Couverture existante, vérification recommandée.**"
+- Si l'utilisateur est **probablement couvert**, préciser : "**Couverture existante**"
 - Si une assurance **est nécessaire**, préciser : "**Pas couvert, contrat recommandé.**"
 - Si l'assurance **est optionnelle**, préciser : "**Couverture partielle, à évaluer selon votre tolérance au risque.**"
 
