@@ -152,6 +152,64 @@ export class VertexAIService {
         }
     }
 
+    async checkDuplicate(uid: string, bucketUrls: string[], userInfo: UserInfoDto): Promise<string> {
+        const displayName =
+            userInfo.firstname && userInfo.lastname ? `${userInfo.firstname} ${userInfo.lastname}` : "l'utilisateur";
+
+        const fileParts = bucketUrls.map((url) => {
+            const extension = url.split('.').pop()?.toLowerCase();
+            let mimeType: string;
+
+            switch (extension) {
+                case 'pdf':
+                    mimeType = 'application/pdf';
+                    break;
+                case 'png':
+                    mimeType = 'image/png';
+                    break;
+                case 'jpg':
+                case 'jpeg':
+                    mimeType = 'image/jpeg';
+                    break;
+                default:
+                    mimeType = 'application/octet-stream';
+                    break;
+            }
+
+            return {
+                fileData: {
+                    fileUri: `gs://contract-central-c710c.firebasestorage.app/${url}`,
+                    mimeType,
+                },
+            };
+        });
+
+        const duplicationPrompt = getDuplicationCheckPrompt(displayName);
+
+        try {
+            this.logger.log(`Checking for duplicate clauses for user: ${uid}`);
+
+            const request = {
+                contents: [
+                    {
+                        role: 'user',
+                        parts: [{ text: duplicationPrompt }, ...fileParts],
+                    },
+                ],
+            };
+
+            const result = await this.generativeTextModel.generateContent(request);
+            const duplicateAnalysis =
+                result?.response?.candidates?.[0]?.content?.parts?.[0]?.text || 'No duplication info found.';
+
+            this.logger.log(`Duplication analysis completed for ${uid}`);
+            return duplicateAnalysis;
+        } catch (error) {
+            this.logger.error(`Error during duplication check for ${uid}: ${error.message}`, error.stack);
+            throw error;
+        }
+    }
+
     // DEBUG METHOD
     // async generateTextContent(uid: string, prompt: string, bucketUrls: string[], userInfo: UserInfoDto): Promise<any> {
     //     const fileParts = bucketUrls.map((url) => {
@@ -279,5 +337,27 @@ Vous vous adressez directement à **${userName}**, veillez à **rendre la répon
 ✅ Recommandation immédiate (ex: "Déjà couvert, aucun contrat nécessaire")
 📜 Justification détaillée (précisant les documents à vérifier)
 📌 Actions immédiates (3 à 4 étapes concrètes)
+`;
+}
+
+function getDuplicationCheckPrompt(userName: string): string {
+    return `
+Vous êtes un expert juridique spécialisé en contrats d'assurance.
+
+Votre tâche est d'analyser les documents fournis par **${userName}** (images ou PDF de contrats) pour détecter toute clause redondante ou tout contrat inutilement dupliqué.
+
+Chaque document fourni est un contrat d'assurance ou une police d'assurance souscrite par **${userName}**.
+
+### Ce que vous devez identifier :
+- Clauses d'assurance similaires ou identiques présentes dans plusieurs documents.
+- Contrats couvrant les mêmes risques avec des conditions similaires.
+- Incohérences ou sur-assurances non justifiées au vu de l'user.
+
+### Format de réponse :
+- 🔁 Liste des doublons détectés : pour chaque clause ou garantie redondante, précisez dans quels fichiers elle apparaît.
+- 📌 Synthèse finale : recommandez si des contrats doivent être résiliés ou fusionnés, ou si aucun doublon n'a été détecté.
+
+⚠ Ne mentionnez que ce qui est manifestement un doublon. Ignorez les clauses clairement distinctes même si proches.
+Soyez structuré et synthétique.
 `;
 }

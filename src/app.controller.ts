@@ -59,6 +59,17 @@ export class AppController {
     }
 
     /**
+     * GET /ai/check-duplicate
+     */
+    @Get('ai/check-duplicate')
+    @ApiOperation({ summary: 'Check for duplicate content using AI' })
+    @ApiResponse({ status: HttpStatus.OK, description: 'Duplicate check completed successfully.' })
+    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized.' })
+    async checkDuplicateContent(@User() u: DecodedIdToken) {
+        return this.appService.checkDuplicate(u.uid);
+    }
+
+    /**
      * POST /ai/coverage-query
      */
     @Post('ai/coverage-query')

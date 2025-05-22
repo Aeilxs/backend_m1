@@ -42,8 +42,21 @@ export class AppService {
         }
 
         const userInfo = (await this.userService.getUserInfo(uid)) as UserInfoDto;
-
         const result = await this.vertexService.generateTextContent(uid, prompt, files, userInfo);
+        return result;
+    }
+
+    async checkDuplicate(uid: string) {
+        this.loggerService.log(`Checking duplicate for user: ${uid}`);
+
+        const files = await this.fileService.getUserFiles(uid);
+
+        if (files.length === 0) {
+            throw new HttpException('Add files before requesting AI.', 404);
+        }
+
+        const userInfo = (await this.userService.getUserInfo(uid)) as UserInfoDto;
+        const result = await this.vertexService.checkDuplicate(uid, files, userInfo);
         return result;
     }
 
