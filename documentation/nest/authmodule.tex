@@ -1,0 +1,83 @@
+\section{Auth Module}
+
+\subsection*{Overview}
+
+The \textbf{Auth} module handles user creation and authentication token validation using the Firebase Admin SDK. It provides a simple REST interface to register new users and verify existing sessions.
+
+\subsection*{Responsibilities}
+
+\begin{itemize}
+    \item Creating new users via Firebase.
+    \item Verifying ID tokens for secure API access.
+    \item Fetching user information by UID.
+\end{itemize}
+
+\subsection*{Dependencies}
+
+\begin{itemize}
+    \item \texttt{firebase-admin} - for user management and token verification.
+    \item \texttt{@nestjs/common} - core NestJS features.
+    \item \texttt{class-validator} - request payload validation (via DTO).
+\end{itemize}
+
+\subsection*{Main Service Methods}
+
+\begin{itemize}
+    \item \textbf{create(dto: CreateUserDto)}: registers a user in Firebase.
+    \item \textbf{checkToken(token: string)}: verifies a Firebase ID token.
+    \item \textbf{getUserByUid(uid: string)}: fetches user data from Firebase.
+\end{itemize}
+
+\subsection*{Testing}
+
+Unit tests are implemented with Jest and cover:
+\begin{itemize}
+    \item User creation with full name.
+    \item Token verification.
+    \item User retrieval by UID.
+\end{itemize}
+
+\subsection*{Exposed Route}
+
+\subsubsection*{POST /auth/signin}
+
+\begin{tabular}{>{\bfseries}l l}
+\toprule
+Method & POST \\
+Route & /auth/signin \\
+Auth required & No \\
+Status codes & 201 Created, 400 Bad Request, 500 Internal Server Error \\
+\bottomrule
+\end{tabular}
+
+\vspace{1em}
+\textbf{Request Body:}
+\begin{verbatim}
+{
+  "email": "john@example.com",
+  "password": "securePass123",
+  "firstname": "John",
+  "lastname": "Doe"
+}
+\end{verbatim}
+
+\vspace{1em}
+\textbf{Success Response:}
+\begin{verbatim}
+Status: 201 Created
+{
+  "statusCode": 201,
+  "message": "User created",
+  "data": {
+    "uid": "user123",
+    ...
+  }
+}
+\end{verbatim}
+
+\vspace{1em}
+\textbf{Error Responses:}
+\begin{itemize}
+    \item \textbf{400 Bad Request} - missing or invalid fields.
+    \item \textbf{500 Internal Server Error} - Firebase failure or exception.
+\end{itemize}

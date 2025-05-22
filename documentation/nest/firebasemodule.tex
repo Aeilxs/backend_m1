@@ -1,0 +1,53 @@
+\section{Firebase Module}
+
+\subsection*{Overview}
+
+The \textbf{FirebaseModule} is a global dynamic module that initializes the Firebase Admin SDK and exposes key Firebase services throughout the application. It centralizes configuration and ensures consistent access to Firebase features like Firestore, Auth, and Cloud Storage.
+
+\subsection*{Responsibilities}
+
+\begin{itemize}
+    \item Initialize Firebase Admin with default credentials.
+    \item Provide access to:
+        \begin{itemize}
+            \item Firestore (NoSQL database)
+            \item Firebase Authentication
+            \item Cloud Storage bucket
+        \end{itemize}
+    \item Export these providers globally to be used by other modules (e.g., Auth, Files, Dashboard).
+\end{itemize}
+
+\subsection*{Dynamic Initialization}
+
+\textbf{FirebaseModule.forRoot()} returns a \texttt{DynamicModule} configured with the following providers:
+
+\begin{itemize}
+    \item \textbf{FIREBASE\_APP} - Firebase application instance
+    \item \textbf{FIRESTORE} - Firestore database instance
+    \item \textbf{FIREBASE\_AUTH} - Firebase authentication handler
+    \item \textbf{FIREBASE\_BUCKET} - Google Cloud Storage bucket handler
+\end{itemize}
+
+These tokens are injected via NestJS's dependency injection system.
+
+\subsection*{Global Scope}
+
+The module is marked with \texttt{@Global()} so it only needs to be imported once and is accessible throughout the entire application without re-importing in each feature module.
+
+\subsection*{Testing}
+
+A dedicated unit test verifies that:
+\begin{itemize}
+    \item All Firebase services are correctly provided via dependency tokens.
+    \item The module exports all necessary services.
+\end{itemize}
+
+Mocked Firebase services are used in unit tests to avoid external dependency on Firebase during test execution.
+
+\subsection*{Configuration}
+
+\begin{itemize}
+    \item \textbf{Project ID:} \texttt{contract-central-c710c}
+    \item \textbf{Storage Bucket:} \texttt{contract-central-c710c.firebasestorage.app}
+    \item \textbf{Credential:} Application Default Credential
+\end{itemize}

@@ -1,0 +1,63 @@
+\section{Dependencies}
+
+This section outlines the dependencies required for the backend service, categorized into service dependencies and development dependencies. Each dependency is listed with its purpose to provide clarity on its role within the project.
+The backend service is built using the NestJS framework and integrates with various Google Cloud services, including Firebase and Vertex AI. The dependencies are managed using npm and are specified in the \texttt{package.json} file.
+
+\subsection{Service Dependencies}
+
+\begin{tabular}{>{\bfseries}l l}
+\toprule
+Package & Purpose \\
+\midrule
+@google-cloud/aiplatform & Vertex AI SDK for ML requests \\
+@google-cloud/pubsub & Google Pub/Sub messaging system \\
+@google-cloud/secret-manager & Secure storage and access to secrets \\
+@google-cloud/vertexai & Vertex AI high-level client (simplified) \\
+@nestjs/common & NestJS decorators and helpers \\
+@nestjs/config & Environment configuration management \\
+@nestjs/core & NestJS core engine \\
+@nestjs/microservices & Microservice architecture support \\
+@nestjs/platform-express & Express integration with NestJS \\
+@nestjs/swagger & OpenAPI documentation generator \\
+@types/multer & Type definitions for multer \\
+class-transformer & DTO class serialization/deserialization \\
+class-validator & DTO input validation \\
+firebase-admin & Firebase Admin SDK (Auth, Firestore, GCS) \\
+multer & Middleware for file uploads \\
+nestjs-pino & Structured logging with Pino in NestJS \\
+pino & High-performance JSON logger \\
+reflect-metadata & Required for decorators/reflection \\
+rxjs & Reactive programming and Observables \\
+swagger-ui-express & Swagger UI middleware for Express \\
+\bottomrule
+\end{tabular}
+
+\subsection{Dev Dependencies}
+
+\begin{tabular}{>{\bfseries}l l}
+\toprule
+Package & Purpose \\
+\midrule
+@nestjs/cli & NestJS project scaffolding and commands \\
+@nestjs/schematics & Code generation templates for NestJS \\
+@nestjs/testing & Utilities for unit and integration tests \\
+@types/express & Type definitions for Express.js \\
+@types/jest & Type definitions for Jest \\
+@types/node & Type definitions for Node.js \\
+@types/supertest & Type definitions for Supertest \\
+@typescript-eslint/eslint-plugin & ESLint rules for TypeScript \\
+@typescript-eslint/parser & Parser to enable ESLint for TS \\
+eslint & Linter for code quality \\
+eslint-config-prettier & Disables rules that conflict with Prettier \\
+eslint-plugin-prettier & Integrates Prettier into ESLint \\
+jest & Testing framework \\
+prettier & Code formatter \\
+source-map-support & Stack trace source map translation \\
+supertest & HTTP assertions for integration tests \\
+ts-jest & Jest preprocessor for TypeScript \\
+ts-loader & TypeScript loader for Webpack \\
+ts-node & Run TypeScript files directly \\
+tsconfig-paths & Support for path aliases in tsconfig \\
+typescript & TypeScript compiler \\
+\bottomrule
+\end{tabular}

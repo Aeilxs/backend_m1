@@ -1,0 +1,113 @@
+\section{User Module}
+
+\subsection*{Overview}
+
+The \textbf{UserModule} manages user-specific metadata and preferences that are not handled by Firebase Auth. It stores and retrieves information such as first name, last name, birthdate, and contact data using Firestore.
+
+\subsection*{Responsibilities}
+
+\begin{itemize}
+    \item Create and update user profile information in Firestore.
+    \item Retrieve authenticated user metadata (from Firebase Auth).
+    \item Provide a minimal contact endpoint for support messages (placeholder).
+\end{itemize}
+
+\subsection*{Dependencies}
+
+\begin{itemize}
+    \item \texttt{Firestore} - Used to store extended user info.
+    \item \texttt{AuthService} - Used to fetch Firebase Auth metadata (e.g., display name, email).
+\end{itemize}
+
+\subsection*{Key Service Methods}
+
+\begin{itemize}
+    \item \texttt{createUserInfo(uid, dto)}: Creates a Firestore document with full name and email pulled from Firebase Auth.
+    \item \texttt{updateUserInfo(uid, dto)}: Updates the user info with merge semantics and a timestamp.
+    \item \texttt{getUserInfo(uid)}: Returns user info from Firestore, or \texttt{null} if not found.
+\end{itemize}
+
+\subsection*{Exposed Routes}
+
+\subsubsection*{POST /user/me}
+
+\begin{tabular}{>{\bfseries}l l}
+\toprule
+Method & POST \\
+Route & /user/me \\
+Auth required & Yes \\
+Status codes & 201 Created, 400 Bad Request, 401 Unauthorized \\
+\bottomrule
+\end{tabular}
+
+\textbf{Description:} Creates the Firestore user profile based on the authenticated user's UID and metadata from Firebase Auth.
+
+\vspace{1em}
+\textbf{Payload Example:}
+\begin{verbatim}
+{
+  "birthdate": "2000-01-01"
+}
+\end{verbatim}
+
+\subsubsection*{PATCH /user/me}
+
+\begin{tabular}{>{\bfseries}l l}
+\toprule
+Method & PATCH \\
+Route & /user/me \\
+Auth required & Yes \\
+Status codes & 200 OK, 400 Bad Request, 401 Unauthorized \\
+\bottomrule
+\end{tabular}
+
+\textbf{Description:} Updates user information in Firestore. Uses \texttt{merge: true} semantics to preserve existing fields.
+
+\vspace{1em}
+\textbf{Payload Example:}
+\begin{verbatim}
+{
+  "firstname": "Jane",
+  "lastname": "Smith",
+  "email": "jane@example.com"
+}
+\end{verbatim}
+
+\subsubsection*{POST /user/contact}
+
+\begin{tabular}{>{\bfseries}l l}
+\toprule
+Method & POST \\
+Route & /user/contact \\
+Auth required & No \\
+Status codes & 200 OK (placeholder) \\
+\bottomrule
+\end{tabular}
+
+\textbf{Description:} Endpoint for users to contact admin/support. Currently a stub (to be implemented).
+
+\vspace{1em}
+\textbf{Payload Example:}
+\begin{verbatim}
+{
+  "email": "user@example.com",
+  "message": "I need help with..."
+}
+\end{verbatim}
+
+\subsection*{Testing}
+
+Unit tests validate:
+
+\begin{itemize}
+    \item Creation of user info from Firebase metadata.
+    \item Updating user info with merge semantics.
+    \item Retrieval of user data (existing and non-existing cases).
+\end{itemize}
+
+Mocks are used for:
+
+\begin{itemize}
+    \item \texttt{AuthService.getUserByUid()}
+    \item Firestore collection, doc, set, and get operations
+\end{itemize}

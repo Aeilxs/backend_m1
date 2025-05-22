@@ -1,0 +1,97 @@
+\section{File Module}
+
+\subsection*{Overview}
+
+The \textbf{FileModule} manages all user file operations including upload, retrieval, deletion, and temporary storage. It integrates Google Cloud Storage via Firebase and uses Pub/Sub to notify other microservices of file-related events.
+
+\subsection*{Responsibilities}
+
+\begin{itemize}
+    \item Upload and store user files under structured paths in GCS.
+    \item Generate temporary signed URLs for accessing files.
+    \item Delete specific or all files for a user.
+    \item Notify other services of file upload and deletion via Pub/Sub.
+\end{itemize}
+
+\subsection*{Dependencies}
+
+\begin{itemize}
+    \item \texttt{@google-cloud/storage} - for GCS bucket access.
+    \item \texttt{FirebaseModule} - to inject the GCS bucket.
+    \item \texttt{PubSubService} - to publish \texttt{file-upload} and \texttt{file-delete} events.
+\end{itemize}
+
+\subsection*{Key Service Methods}
+
+\begin{itemize}
+    \item \texttt{uploadFile(uid, file, dto)} - Uploads a categorized file and emits Pub/Sub event.
+    \item \texttt{getFileUrl(uid, fileName)} - Returns a temporary signed URL for a user file.
+    \item \texttt{getUserFiles(uid)} - Lists all files uploaded by the user.
+    \item \texttt{deleteFile(uid, fname, category)} - Deletes a file and emits a Pub/Sub event.
+    \item \texttt{deleteAllUserFiles(uid)} - Deletes all user files and emits a single Pub/Sub event.
+    \item \texttt{uploadTmpImage(uid, file, dto)} - Special-purpose method to upload temporary images.
+    \item \texttt{deleteTempFile(fpath)} - Deletes a temporary file if it exists.
+\end{itemize}
+
+\subsection*{Exposed Routes}
+
+\subsubsection*{POST /files/upload}
+
+\begin{tabular}{>{\bfseries}l l}
+\toprule
+Method & POST \\
+Route & /files/upload \\
+Auth required & Yes \\
+Consumes & multipart/form-data \\
+\bottomrule
+\end{tabular}
+
+\vspace{1em}
+\textbf{Form fields:}
+\begin{itemize}
+    \item \texttt{file}: PDF file to upload
+    \item \texttt{category}: required category label (e.g., \texttt{HEALTH}, \texttt{EMPLOYMENT})
+\end{itemize}
+
+\subsubsection*{GET /files/:fileName}
+
+Returns a temporary signed URL for the requested file.
+
+\subsubsection*{GET /files}
+
+Returns a list of all files uploaded by the authenticated user.
+
+\subsubsection*{DELETE /files/:category/:fileName}
+
+Deletes a specific file in a category and emits a \texttt{file-delete} event.
+
+\subsubsection*{DELETE /files}
+
+Deletes all files for the user and emits a single \texttt{file-delete} event.
+
+\subsection*{Error Handling}
+
+\begin{itemize}
+    \item \textbf{400 Bad Request} - Invalid or missing category.
+    \item \textbf{404 Not Found} - Requested file does not exist.
+    \item \textbf{500 Internal Server Error} - Upload/delete/signing failures.
+\end{itemize}
+
+\subsection*{Testing}
+
+Unit tests validate:
+
+\begin{itemize}
+    \item File upload with event publishing.
+    \item Temporary signed URL generation.
+    \item Accurate file listing.
+    \item Conditional deletion (specific or all files).
+    \item Handling of missing files and errors.
+\end{itemize}
+
+Mocks are used for:
+
+\begin{itemize}
+    \item GCS Bucket and File objects.
+    \item Pub/Sub message publishing.
+\end{itemize}

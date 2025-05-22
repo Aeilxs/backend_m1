@@ -1,0 +1,86 @@
+\section{Dashboard Module}
+
+\subsection*{Overview}
+
+The \textbf{Dashboard} module provides a synthetic view of a user's activity and data. It aggregates file statistics and coverage request history from Firestore and returns a structured dashboard summary.
+
+\subsection*{Responsibilities}
+
+\begin{itemize}
+    \item Aggregate file statistics per user from Cloud Storage.
+    \item Count and classify AI coverage requests (pending / completed).
+    \item Return a structured summary to the frontend.
+\end{itemize}
+
+\subsection*{Dependencies}
+
+\begin{itemize}
+    \item \texttt{FileService} - for retrieving user files from storage.
+    \item \texttt{Firestore} - for querying the \texttt{coverage\_requests} collection.
+    \item \texttt{@nestjs/common} - for DI and controller structure.
+\end{itemize}
+
+\subsection*{Main Service Method}
+
+\begin{itemize}
+    \item \textbf{buildDashboard(uid: string)}: builds and returns a \texttt{DashboardDto} object containing:
+    \begin{itemize}
+        \item Total number of user files
+        \item Breakdown of files by category
+        \item Coverage requests (pending and completed)
+        \item Recent request history (max 20)
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Resilience Handling}
+
+If the required Firestore index is missing, a partial dashboard is returned with empty coverage history. This ensures continued availability even when Firestore is misconfigured.
+
+\subsection*{Exposed Route}
+
+\subsubsection*{GET /dashboard}
+
+\begin{tabular}{>{\bfseries}l l}
+\toprule
+Method & GET \\
+Route & /dashboard \\
+Auth required & Yes (via Firebase ID token) \\
+Status codes & 200 OK, 500 Internal Server Error \\
+\bottomrule
+\end{tabular}
+
+\vspace{1em}
+\textbf{Headers:}
+\begin{verbatim}
+Authorization: Bearer <ID_TOKEN>
+\end{verbatim}
+
+\vspace{1em}
+\textbf{Success Response:}
+\begin{verbatim}
+Status: 200 OK
+{
+  "totalFiles": 3,
+  "filesByCategory": {
+    "health": 1,
+    "employment": 2
+  },
+  "pendingCoverageRequests": 1,
+  "completedCoverageRequests": 4,
+  "coverageHistory": [
+    {
+      "requestId": "abc123",
+      "prompt": "What is my health coverage?",
+      "status": "done",
+      "response": "...",
+      "updatedAt": 1716170000000
+    }
+  ]
+}
+\end{verbatim}
+
+\vspace{1em}
+\textbf{Error Responses:}
+\begin{itemize}
+    \item \textbf{500 Internal Server Error} - Firestore failure or exception.
+\end{itemize}

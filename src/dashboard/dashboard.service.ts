@@ -71,7 +71,7 @@ export class DashboardService {
             coverageHistory.sort((a, b) => b.updatedAt - a.updatedAt);
             const limitedHistory = coverageHistory.slice(0, this.HISTORY_LIMIT);
 
-            this.logger.debug(`Coverage requests – pending: ${pending}, completed: ${completed} for user ${uid}`);
+            this.logger.debug(`Coverage requests - pending: ${pending}, completed: ${completed} for user ${uid}`);
 
             return {
                 totalFiles: files.length,

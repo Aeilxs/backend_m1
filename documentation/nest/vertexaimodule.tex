@@ -1,0 +1,85 @@
+\section{VertexAI Module}
+
+\subsection*{Overview}
+
+The \textbf{VertexAI Module} integrates the Google Cloud Vertex AI API into the backend using the \texttt{@google-cloud/vertexai} client. It handles AI-driven reasoning and recommendation tasks by interacting with Gemini 1.5 Pro.
+
+\subsection*{Responsibilities}
+
+\begin{itemize}
+    \item Load a generative model (Gemini 1.5 Pro) via the Vertex AI SDK.
+    \item Process user prompts and file references (PDF, images).
+    \item Generate structured reasoning and actionable recommendations.
+    \item Log AI interactions to Firestore for traceability.
+\end{itemize}
+
+\subsection*{Workflow Summary}
+
+The method \texttt{generateTextContent} executes two chained LLM calls:
+
+\begin{enumerate}
+    \item \textbf{Structured reasoning generation} based on:
+    \begin{itemize}
+        \item User metadata (\texttt{firstname}, \texttt{lastname}, etc.)
+        \item Attached files from Firebase Storage
+        \item Custom domain-specific reasoning prompt
+    \end{itemize}
+    \item \textbf{Final decision generation} based on the AI's reasoning output.
+\end{enumerate}
+
+Results are logged in Firestore under the \texttt{logs/\{uid\}/ai\_interactions} collection with full metadata.
+
+\subsection*{Prompt Logic}
+
+\begin{itemize}
+    \item Prompts are composed dynamically using the user's identity and structured business rules.
+    \item \textbf{Reasoning Prompt:} guides the model to extract risk analysis and contract redundancies.
+    \item \textbf{Final Decision Prompt:} asks the model to produce an actionable summary.
+    \item All file attachments are referenced using GCS URIs (e.g., \texttt{gs://bucket/path}).
+\end{itemize}
+
+\subsection*{Key Method: \texttt{generateTextContent}}
+
+\begin{itemize}
+    \item \textbf{Inputs:} user ID, prompt string, list of Firebase Storage URLs, user metadata.
+    \item \textbf{Output:} response object from Vertex AI's LLM (Gemini 1.5 Pro).
+    \item \textbf{Side-effects:}
+    \begin{itemize}
+        \item AI interaction logs written to Firestore.
+        \item Token usage, model version, and response IDs tracked.
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Firestore Logging Structure}
+
+Each interaction creates or updates a Firestore document with:
+
+\begin{itemize}
+    \item \texttt{prompt}, \texttt{reasoning}, \texttt{finalDecision}
+    \item \texttt{vertexResponse} and \texttt{finalVertexResponse} metadata
+    \item \texttt{createdAt}, \texttt{deletedAt}
+\end{itemize}
+
+\subsection*{Error Handling}
+
+\begin{itemize}
+    \item If reasoning or decision generation fails, the error is logged and rethrown.
+    \item GCS URI generation fallback uses MIME type detection to support different file types.
+\end{itemize}
+
+\subsection*{Testing}
+
+Unit tests validate:
+
+\begin{itemize}
+    \item Proper generation of both reasoning and final decision via mocked LLM.
+    \item Firestore logs are created and updated accordingly.
+    \item Token usage, model version, and response IDs are extracted correctly.
+\end{itemize}
+
+Mocks are used for:
+
+\begin{itemize}
+    \item VertexAI client and model generation responses.
+    \item Firestore document creation and update.
+\end{itemize}

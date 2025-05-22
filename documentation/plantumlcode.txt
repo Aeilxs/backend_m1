@@ -1,0 +1,38 @@
+@startuml
+actor Client
+
+participant "Auth Service" as AuthService
+
+participant "File Controller" as FileController
+participant "File Service" as FileService
+
+participant "App Controller" as AppController
+participant "App Service" as AppService
+
+participant "VertexAI\nService" as VertexAIService
+
+participant "Google Cloud\nBucket" as GCPB
+
+== Authentification ==
+
+Client -> AuthService : API: POST /auth/signin { "email": ..., "password": ... }
+AuthService --> Client : secure token or fail
+
+== Uploading contract(s) ==
+
+Client -> FileController : POST /files/upload { "fileName": ..., "fileType": ... }
+FileController -> FileService : Security check (authentification etc.)
+FileService -> GCPB : Digest and store file
+FileService --> Client : Bucket URL to retrieve the file later on if needed
+
+== Asking AI ==
+
+Client -> AppController : POST /ai/generate-text { "prompt" : ... }
+AppController -> AppService : After auth, retrieve user data (context, files ...)
+GCPB --> AppService : files ...
+AuthService --> AppService : user context (name etc...)
+AppService -> VertexAIService : generateTextContent(uid, prompt, bucketUrls, userInfo)
+VertexAIService --> AppService : AI Response
+AppService --> AppController : AI Response
+AppController --> Client : AI Response
+@enduml

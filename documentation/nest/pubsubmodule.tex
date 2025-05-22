@@ -1,0 +1,55 @@
+\section{PubSub Module}
+
+\subsection*{Overview}
+
+The \textbf{PubSubModule} encapsulates the Google Cloud Pub/Sub integration used by the application to handle asynchronous communication between microservices. It publishes and subscribes to various event topics related to files and AI coverage analysis.
+
+\subsection*{Responsibilities}
+
+\begin{itemize}
+    \item Publish events to specific Pub/Sub topics.
+    \item Subscribe to the \texttt{coverage-response-sub} subscription.
+    \item Update Firestore with AI coverage results upon message reception.
+\end{itemize}
+
+\subsection*{Topics Used}
+
+\begin{itemize}
+    \item \textbf{coverage-query} - Trigger coverage analysis requests.
+    \item \textbf{coverage-response} - Receives responses from the AI service.
+    \item \textbf{file-upload} - Event triggered when a file is uploaded.
+    \item \textbf{file-delete} - Event triggered when a file is deleted.
+\end{itemize}
+
+\subsection*{Key Methods}
+
+\begin{itemize}
+    \item \texttt{publishMessage(topicName: string, data: object)} \\
+    Publishes a JSON-encoded message to the specified Pub/Sub topic.
+
+    \item \texttt{subscribeToCoverageResponse()} \\
+    Subscribes to \texttt{coverage-response-sub} and processes AI results to update the Firestore \texttt{coverage\_requests} collection.
+\end{itemize}
+
+\subsection*{Error Handling}
+
+If a received message is missing expected fields (\texttt{request\_id}, \texttt{user\_uuid}, or \texttt{response}), the message is rejected with \texttt{nack()}. Other exceptions are logged and also result in a negative acknowledgment.
+
+\subsection*{Lifecycle Hook}
+
+The service implements \texttt{OnModuleInit} and only subscribes to incoming Pub/Sub messages if the environment is not \texttt{"test"}. This allows for isolated unit testing without background consumers.
+
+\subsection*{Testing}
+
+Unit tests verify:
+\begin{itemize}
+    \item That messages are published correctly with expected parameters.
+    \item That the \texttt{subscribeToCoverageResponse} method is invoked on module initialization (except in test mode).
+    \item That Firestore is updated when a message is handled successfully.
+\end{itemize}
+
+Mocks are used for:
+\begin{itemize}
+    \item Pub/Sub client, topics and subscriptions.
+    \item Firestore client and document operations.
+\end{itemize}

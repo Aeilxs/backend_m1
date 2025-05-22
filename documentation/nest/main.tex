@@ -1,0 +1,25 @@
+\chapter{Microservice NestBackend}
+
+\section{Overview}
+\textbf{NestBackend} is the main backend service of the system. It integrates several key modules.
+
+\section{Main Features}
+\begin{itemize}
+    \item \textbf{Authentication} using Firebase Auth
+    \item \textbf{Firebase} in a GCP Cloud Storage bucket
+    \item \textbf{VertexAI} with Gemini pro 1.5
+    \item \textbf{Pub/Sub} messaging to communicate with DocAnalysis
+    \item \textbf{Dashboard} for user to manage their documents
+    \item \textbf{User} for user management
+\end{itemize}
+
+\input{nest/dependencies}
+\input{nest/usermodule}
+\input{nest/firebasemodule}
+\input{nest/filemodule}
+\input{nest/vertexaimodule}
+\input{nest/dashboardmodule}
+\input{nest/pubsubmodule}
+\input{nest/vertexaimodule}
+\input{nest/authmodule}
+\input{nest/ai-sequence}
