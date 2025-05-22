@@ -221,6 +221,8 @@ Votre mission est d'analyser la situation de **${userName}** en fonction de ses 
 ### Objectif :
 - Construire un raisonnement structuré pour comprendre le contexte de **${userName}**.
 
+Si une image est fournie, il s'agit d'une photo que l'utilisateur s'apprête à signer.
+
 Pour chaque contrat vous drevez répondre aux questions suivantes :
 - Quels sont les risques couverts ?
 - Quels sont les plafonds et exclusions ?
