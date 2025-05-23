@@ -57,9 +57,11 @@ export class FileService {
         }
     }
 
-    async getFileUrl(uid: string, fileName: string): Promise<string> {
-        this.logger.log(`Generating temporary URL for file ${fileName} for user ${uid}`);
-        const file = this.bucket.file(`users/${uid}/${fileName}`);
+    async getFileUrl(uid: string, fileCat: string, fileName: string): Promise<string> {
+        this.logger.log(
+            `Generating temporary URL for file ${fileName}, category: ${fileCat.toLowerCase()} for user ${uid}`,
+        );
+        const file = this.bucket.file(`users/${uid}/${fileCat}/${fileName}`);
 
         try {
             const [url] = await file.getSignedUrl({

@@ -35,8 +35,12 @@ export class FileController {
     @ApiResponse({ status: 200, description: 'Temporary URL generated successfully.' })
     @ApiResponse({ status: 404, description: 'File not found.' })
     @ApiResponse({ status: 401, description: 'Unauthorized.' })
-    async getFileUrl(@Param('fileName') fname: string, @User() u: DecodedIdToken): Promise<string> {
-        return this.fileService.getFileUrl(u.uid, fname);
+    async getFileUrl(
+        @Param('fileCategory') fcat,
+        @Param('fileName') fname: string,
+        @User() u: DecodedIdToken,
+    ): Promise<string> {
+        return this.fileService.getFileUrl(u.uid, fcat, fname);
     }
 
     /**
