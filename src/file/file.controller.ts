@@ -28,15 +28,15 @@ export class FileController {
     }
 
     /**
-     * GET /files/:fileName
+     * GET /files/:fileCategory/:fileName
      */
-    @Get(':fileName')
+    @Get(':fileCategory/:fileName')
     @ApiOperation({ summary: 'Get temporary URL for a file' })
     @ApiResponse({ status: 200, description: 'Temporary URL generated successfully.' })
     @ApiResponse({ status: 404, description: 'File not found.' })
     @ApiResponse({ status: 401, description: 'Unauthorized.' })
     async getFileUrl(
-        @Param('fileCategory') fcat,
+        @Param('fileCategory') fcat: string,
         @Param('fileName') fname: string,
         @User() u: DecodedIdToken,
     ): Promise<string> {

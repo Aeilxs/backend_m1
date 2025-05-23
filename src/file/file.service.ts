@@ -58,19 +58,23 @@ export class FileService {
     }
 
     async getFileUrl(uid: string, fileCat: string, fileName: string): Promise<string> {
-        this.logger.log(
-            `Generating temporary URL for file ${fileName}, category: ${fileCat.toLowerCase()} for user ${uid}`,
-        );
-        const file = this.bucket.file(`users/${uid}/${fileCat}/${fileName}`);
-
+        this.logger.log(`Generating temporary URL for file ${fileName}, category: ${fileCat} for user ${uid}`);
         try {
+            const filePath = `users/${uid}/${fileCat}/${fileName}`;
+            this.logger.log('Trying to sign file path: ' + filePath);
+            const file = this.bucket.file(filePath);
+
+            const [exists] = await file.exists();
+            if (!exists) throw new NotFoundException('File does not exist.');
+
             const [url] = await file.getSignedUrl({
                 action: 'read',
-                expires: Date.now() + 10 * 60 * 1000, // 10min
+                expires: Date.now() + 10 * 60 * 1000,
             });
+
             return url;
         } catch (error) {
-            this.logger.error('Error generating signed URL: ', error);
+            this.logger.error('Error:', error.message, error.code);
             throw new HttpException('Could not generate URL', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
