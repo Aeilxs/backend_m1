@@ -18,7 +18,7 @@ gcloud run services logs read contract-central-backend-gcp-pubsub --region europ
   --project=contract-central-c710c \
   --limit=20 \
   --order=desc \
-  --format=json > errs.log
+  --format=json > errs.json
 
 ```
 

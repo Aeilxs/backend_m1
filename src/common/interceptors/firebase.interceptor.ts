@@ -22,7 +22,9 @@ export class FirebaseInterceptor implements NestInterceptor {
     intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
         return next.handle().pipe(
             catchError((error) => {
-                this.logger.error('Caught error in FirebaseInterceptor', error);
+                this.logger.error(
+                    `Caught error in FirebaseInterceptor : \nmsg:${error.message}\nstack:${error.stack}\ncode:${error.code}`,
+                );
 
                 if (typeof error?.code === 'string' && error.code.startsWith('auth/')) {
                     const statusCode = this.firebaseErrorMap.get(error.code) || HttpStatus.INTERNAL_SERVER_ERROR;

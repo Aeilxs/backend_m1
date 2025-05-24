@@ -74,7 +74,7 @@ export class FileService {
 
             return url;
         } catch (error) {
-            this.logger.error('Error:', error.message, error.code);
+            this.logger.error(`Error while generating URL:\nmsg: ${error.message}\nstack: ${error.stack}`);
             throw new HttpException('Could not generate URL', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
