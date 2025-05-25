@@ -184,7 +184,7 @@ export class VertexAIService {
             };
         });
 
-        const duplicationPrompt = getDuplicationCheckPrompt(displayName);
+        const duplicationPrompt = getDuplicationCheckPrompt(displayName, userInfo);
 
         try {
             this.logger.log(`Checking for duplicate clauses for user: ${uid}`);
@@ -362,7 +362,7 @@ Vous vous adressez directement à **${userName}**, veillez à **rendre la répon
 // `;
 // }
 
-function getDuplicationCheckPrompt(userName: string): string {
+function getDuplicationCheckPrompt(userName: string, userInfo: UserInfoDto): string {
     return `
 Vous êtes un expert juridique spécialisé en contrats d'assurance.
 
@@ -401,6 +401,8 @@ Recommandez le **meilleur contrat à conserver**, en justifiant selon :
 - la complémentarité ou non avec les autres contrats.
 
 ---
+
+USER INFO: ${JSON.stringify(userInfo, null, 2)}
 
 🧠 Exemple de verdict attendu :
 > ✅ Proposition : Garder le contrat auto de la Matmut, car il couvre davantage de situations (vol, bris de glace, assistance mondiale), ce qui correspond mieux au profil de ${userName}, jeune parent avec 4 enfants, un animal domestique et un métier nécessitant des déplacements.
