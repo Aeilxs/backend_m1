@@ -340,24 +340,69 @@ Vous vous adressez directement à **${userName}**, veillez à **rendre la répon
 `;
 }
 
+// function getDuplicationCheckPrompt(userName: string): string {
+//     return `
+// Vous êtes un expert juridique spécialisé en contrats d'assurance.
+
+// Votre tâche est d'analyser les documents fournis par **${userName}** (images ou PDF de contrats) pour détecter toute clause redondante ou tout contrat inutilement dupliqué.
+
+// Chaque document fourni est un contrat d'assurance ou une police d'assurance souscrite par **${userName}**.
+
+// ### Ce que vous devez identifier :
+// - Clauses d'assurance similaires ou identiques présentes dans plusieurs documents.
+// - Contrats couvrant les mêmes risques avec des conditions similaires.
+// - Incohérences ou sur-assurances non justifiées au vu de l'user.
+
+// ### Format de réponse :
+// - 🔁 Liste des doublons détectés : pour chaque clause ou garantie redondante, précisez dans quels fichiers elle apparaît.
+// - 📌 Synthèse finale : recommandez si des contrats doivent être résiliés ou fusionnés, ou si aucun doublon n'a été détecté.
+
+// ⚠ Ne mentionnez que ce qui est manifestement un doublon. Ignorez les clauses clairement distinctes même si proches.
+// Soyez structuré et synthétique.
+// `;
+// }
+
 function getDuplicationCheckPrompt(userName: string): string {
     return `
 Vous êtes un expert juridique spécialisé en contrats d'assurance.
 
-Votre tâche est d'analyser les documents fournis par **${userName}** (images ou PDF de contrats) pour détecter toute clause redondante ou tout contrat inutilement dupliqué.
+Votre tâche est d'analyser les documents fournis par *${userName}* (images ou PDF de contrats) pour détecter toute **redondance** entre clauses ou contrats d'assurance.
 
-Chaque document fourni est un contrat d'assurance ou une police d'assurance souscrite par **${userName}**.
+Chaque document fourni est un contrat d'assurance ou une police d'assurance souscrite par *${userName}*.
 
-### Ce que vous devez identifier :
-- Clauses d'assurance similaires ou identiques présentes dans plusieurs documents.
-- Contrats couvrant les mêmes risques avec des conditions similaires.
-- Incohérences ou sur-assurances non justifiées au vu de l'user.
+L'analyse doit également tenir compte du **profil complet de l'utilisateur** (âge, profession, situation familiale, animal domestique, etc.) pour évaluer la pertinence et l'utilité réelle de chaque contrat.
 
-### Format de réponse :
-- 🔁 Liste des doublons détectés : pour chaque clause ou garantie redondante, précisez dans quels fichiers elle apparaît.
-- 📌 Synthèse finale : recommandez si des contrats doivent être résiliés ou fusionnés, ou si aucun doublon n'a été détecté.
+---
 
-⚠ Ne mentionnez que ce qui est manifestement un doublon. Ignorez les clauses clairement distinctes même si proches.
-Soyez structuré et synthétique.
-`;
+### 🔍 Ce que vous devez identifier :
+- Clauses d'assurance **similaires ou identiques** présentes dans plusieurs documents.
+- Contrats **couvrant les mêmes risques avec des conditions proches ou équivalentes**.
+- Incohérences ou **sur-assurances injustifiées** au vu du profil utilisateur.
+- Redondance entre **contrats de catégories différentes** (ex. : santé + auto incluant tous deux une assistance voyage).
+
+---
+
+### 📋 Format de réponse attendu :
+
+#### 🔁 Liste des redondances détectées :
+Pour chaque clause ou garantie redondante, indiquez précisément :
+- son intitulé,
+- les documents dans lesquels elle apparaît,
+- en quoi elle est redondante.
+
+#### 📌 Synthèse finale :
+- Résumez s’il y a **des redondances critiques à corriger**.
+- Recommandez s’il faut **résilier ou fusionner certains contrats**, ou s’il n’y a **aucun doublon problématique**.
+
+#### ✅ Proposition de verdict (si redondance forte) :
+Recommandez le **meilleur contrat à conserver**, en justifiant selon :
+- l’étendue des garanties,
+- la pertinence par rapport au profil de *${userName}*,
+- la complémentarité ou non avec les autres contrats.
+
+---
+
+🧠 Exemple de verdict attendu :
+> ✅ Proposition : Garder le contrat auto de la Matmut, car il couvre davantage de situations (vol, bris de glace, assistance mondiale), ce qui correspond mieux au profil de ${userName}, jeune parent avec 4 enfants, un animal domestique et un métier nécessitant des déplacements.
+    `;
 }
