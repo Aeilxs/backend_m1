@@ -405,6 +405,8 @@ Recommandez le **meilleur contrat à conserver**, en justifiant selon :
 USER INFO: ${JSON.stringify(userInfo, null, 2)}
 
 🧠 Exemple de verdict attendu :
+
+> Réponse "à plat", pas de code block markdown ou json.
 > ✅ Proposition : Garder le contrat auto de la Matmut, car il couvre davantage de situations (vol, bris de glace, assistance mondiale), ce qui correspond mieux au profil de ${userName}, jeune parent avec 4 enfants, un animal domestique et un métier nécessitant des déplacements.
     `;
 }
