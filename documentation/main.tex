@@ -33,6 +33,7 @@
 \makeatother
 
 
+\date{Supervised by Thomas Dandelot and Tony Varnier}
 
 \maketitle
 \tableofcontents
@@ -43,5 +44,18 @@
 \input{intro}
 \input{nest/main}
 \input{docanalysis/main}
+\input{frontend/main}
+
+\chapter*{Conclusion}
+\addcontentsline{toc}{chapter}{Conclusion}
+
+This documentation presented the architecture, technical design, and implementation details of the Contract Central project. The system combines a mobile/web frontend built with Flutter, a scalable backend hosted on Google Cloud, and AI-driven document analysis using Gemini and ChromaDB.
+
+Each component was developed as an independent microservice to promote modularity and ease of maintenance. The CI/CD pipeline, based on GitHub Actions, enables automated testing and deployment to Cloud Run.
+
+The frontend was designed to offer a smooth, cross-platform user experience, while the backend ensures security and scalability through asynchronous messaging and vector-based search.
+
+This project highlights the power of combining cloud infrastructure, AI, and cross-platform development to deliver a real-world solution for contract management.
+
 
 \end{document}
